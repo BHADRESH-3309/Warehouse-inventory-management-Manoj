@@ -1,0 +1,236 @@
+﻿@{
+    ViewData["Title"] = "Templates List";
+}
+
+@section Styles {
+    <style>
+        .buttons-csv {
+            margin-left: 5px;
+            height: 31px;
+            font-size: 14px;
+        }
+
+        #dt_Table_previous.disabled {
+            color: brown !important;
+            pointer-events: none; /* Prevent clicking */
+            opacity: 0.5; /* Optional: To indicate it's disabled */
+        }
+
+        #dt_Table_next.disabled {
+            color: brown !important;
+            pointer-events: none; /* Prevent clicking */
+            opacity: 0.5; /* Optional: To indicate it's disabled */
+        }
+
+
+        @@media only screen and (max-width: 588px) {
+            .btnDownload {
+                display: block !important; /* or inline-block / grid / whatever you want */
+            }
+        }
+
+        @@media only screen and (max-width: 492px) {
+            .btnEdit {
+                display: block !important; /* or inline-block / grid / whatever you want */
+            }
+        }
+    </style>
+}
+
+@* @if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible m-3" id="successmsg">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        @TempData["SuccessMessage"]
+
+    </div>
+} *@
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success alert-dismissible m-3" id="successmsg">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        @ViewBag.SuccessMessage
+
+    </div>
+}
+else if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger alert-dismissible m-3" id="errormsg">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+
+@*------DataTable------*@
+<div class="card">
+    <!-- /.card-header -->
+    <div class="card-body">
+        <div class="overlay-wrapper">
+            <div class="overlay dark" id="loader" style="display: flex; justify-content: center; align-items: flex-start;">
+                <i class="fas fa-3x fa-spinner fa-spin" style="margin-top: 20px;"></i>
+            </div>
+        </div>
+        <div id="divItems">
+            <table id="dt_Table" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Listing Product</th>
+                        <th>Category Name </th>
+                        <th style="width:350px">Title</th>
+                        <th style="width:150px">Modified</th>
+                        <th style="width:100px"> Edit Template</th>
+                        <th style="width:150px">Download Template</th>
+                    </tr>
+                </thead>
+
+            </table>
+        </div>
+    </div>
+    <!-- /.card-body -->
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            Display_TemplateList();
+        })
+
+        function Display_TemplateList() {
+            $("#dvProgressBarSpinner").show();
+            $.ajax({
+                type: "GET",
+                url: "/ListingForm/GetListingTemplateList",
+                contentType: "application/json; charset=utf-8",
+                datatype: 'json',
+                success: function (response) {
+                    DataTable(response);
+                    $('#loader').hide();
+                },
+                failure: function (data) {
+                    console.error(response.message);
+                    $('#loader').hide();
+                },
+                error: function (data) {
+                    console.error(response.message);
+                    $('#loader').hide();
+                }
+            });
+        }
+        function DataTable(JSONdata) {
+            $('#dt_Table').DataTable({
+                "paging": true,
+                "language": {
+                    "paginate": {
+                        "next": '<i class="fas fa-greater-than"></i><i class="fas fa-greater-than"></i>',  // or '→'
+                        "previous": '<i class="fas fa-less-than"></i><i class="fas fa-less-than"></i>', // or '←'
+                    }
+                },
+                "lengthChange": true,
+                "pageLength": 50,
+                "lengthMenu": [50, 100, 150],
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "order": [4, false],
+                "columnDefs": [
+                    { "targets": [4,5], "orderable": false },
+                ],
+                "dom":
+                    '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-end"fB>>' +
+                    '<"row"<"col-sm-12"t>>' +
+                    '<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6 d-flex justify-content-end"p>>',
+                data: JSONdata.result,
+                "columns": [{
+                    "data": "productType",
+
+                }, {
+                    "data": "categoryName",
+
+                }, {
+                    "data": "title",
+                    "render": function (data, type, row) {
+                        return `<p class="title" style="max-width:300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" >
+                                                    ${row.title ? row.title : ''}
+                                                 </p>`
+                    }
+                }, {
+                    "data": "dateAdd",
+
+                },{
+                    "data": "idListingProduct",
+                    "render": function (data, type, row) {
+                        return "<div class='d-flex justify-content-center btnEdit'>" +
+                            "<button id='edit_" + data + "' class='btn btn-info btnedit btn-sm' " +
+                            "onclick=\"window.location.href='@Url.Action("Index", "ListingForm")?id=" + data + "'\" " +
+                            "data-toggle='tooltip' data-placement='bottom' title='Edit Template'>" +
+                            "<i class='fa fa-edit'></i></button>" +
+                            "</div>";
+
+                    }
+                }, {
+
+                    "data": "idListingProduct",
+                    "render": function (data, type, row) {
+                        return "<div class='d-flex justify-content-center btnDownload'>" +
+                            "<button id='download_" + data + "' class='btn btn-info btn-sm btndownload' " +
+                            "onclick='ExportExcel(\"" + row.categoryName + "\")' " +
+                            "data-toggle='tooltip' data-placement='bottom' title='Download Template'>" +
+                            "<i class='fas fa-file-excel'></i></button>" +
+                            "</div>";
+                    }
+
+                }],
+                buttons: [
+                    {
+                        extend: 'csv',
+                        title: '',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3]
+                        }
+                    }]
+            }).buttons().container().appendTo('#custom-btn-container');
+        }
+        // Export excel for specific label
+        function ExportExcel(categoryName) {
+            $('#loader').show();
+
+            // Make sure it's a string and trim whitespace
+            categoryName = (categoryName || "").toString().trim();
+
+            // Build file name (example: Test_Template.xlsm)
+            var fileName = categoryName + "_Template.xlsm";
+
+            // Build file path (must be relative to wwwroot)
+            var filePath = "/ListingFiles/" + fileName;
+
+            // Trigger download
+            window.location.href = filePath;
+
+            $('#loader').hide();
+        }
+        // jQuery script to show full title on hover
+        $(document).on('mouseenter', '.title', function () {
+            const $this = $(this);
+            if ($this.width() < $this[0].scrollWidth) {
+                $this.css('white-space', 'normal');
+            }
+        });
+
+        $(document).on('mouseleave', '.title', function () {
+            const $this = $(this);
+            $this.css('white-space', 'nowrap');
+        });
+    </script>
+    <script>
+        window.onload = function () {
+            var downloadFile = '@ViewBag.DownloadFile';
+            if (downloadFile && downloadFile.trim() !== "") {
+                var downloadUrl = '@Url.Action("DownloadTemplate", "ListingForm")' + '?fileName=' + downloadFile;
+                window.location.href = downloadUrl;
+            }
+        };
+    </script>
+}

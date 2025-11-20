@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DataAccess\SPQuery\**" />
+    <Compile Remove="wwwroot\css\LoginCss\images\**" />
+    <Content Remove="DataAccess\SPQuery\**" />
+    <Content Remove="wwwroot\css\LoginCss\images\**" />
+    <EmbeddedResource Remove="DataAccess\SPQuery\**" />
+    <EmbeddedResource Remove="wwwroot\css\LoginCss\images\**" />
+    <None Remove="DataAccess\SPQuery\**" />
+    <None Remove="wwwroot\css\LoginCss\images\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspose.PDF" Version="24.6.0" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="EPPlus" Version="5.8.7" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.36" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    <PackageReference Include="System.Data.OleDb" Version="7.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\AccessJsonFile\" />
+    <Folder Include="wwwroot\productimages\" />
+    <Folder Include="wwwroot\ReceivedExcel\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\css\LoginCss\fonts\fontawesome-webfont.woff2" />
+    <None Include="wwwroot\css\LoginCss\fonts\Material-Design-Iconic-Font.woff2" />
+    <None Include="wwwroot\css\LoginCss\js\bootstrap.min.js" />
+    <None Include="wwwroot\css\LoginCss\js\jquery-3.2.1.min.js" />
+    <None Include="wwwroot\css\LoginCss\js\main.js" />
+    <None Include="wwwroot\css\LoginCss\js\popper.js" />
+  </ItemGroup>
+
+</Project>

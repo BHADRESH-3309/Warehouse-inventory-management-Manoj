@@ -1,0 +1,82 @@
+﻿SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		AEScope
+-- Create date: 13-Jan-2024
+-- Description:	Get Velocity data of product
+-- =============================================
+CREATE PROCEDURE spGetProductVelocityData
+	-- Add the parameters for the stored procedure here
+	@idProduct uniqueidentifier
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+    
+	WITH WarehouseData_7Days AS (
+    SELECT p.WarehouseSKU, COALESCE(SUM(sd.QtyShipped), 0) AS _7DaysUnitSales
+    FROM (SELECT DISTINCT WarehouseSKU FROM tblProduct) p 
+    LEFT JOIN tblSKU s ON s.WarehouseSKU = p.WarehouseSKU 
+    LEFT JOIN tblMappingSKU m ON m.idSKU = s.idSKU 
+    LEFT JOIN tblOrderAndShipmentDetail sd ON sd.SellerSKU = m.SKU 
+    AND sd.UpdatedDatetime >= DATEADD(DAY, -7, CONVERT(datetime, GETDATE()))
+    GROUP BY p.WarehouseSKU), WarehouseData_30Days AS (
+    SELECT p.WarehouseSKU, COALESCE(SUM(sd.QtyShipped), 0) AS _30DaysUnitSales
+    FROM (SELECT DISTINCT WarehouseSKU FROM tblProduct) p 
+    LEFT JOIN tblSKU s ON s.WarehouseSKU = p.WarehouseSKU 
+    LEFT JOIN tblMappingSKU m ON m.idSKU = s.idSKU 
+    LEFT JOIN tblOrderAndShipmentDetail sd ON sd.SellerSKU = m.SKU 
+    AND sd.UpdatedDatetime >= DATEADD(DAY, -30, CONVERT(datetime, GETDATE()))
+    GROUP BY p.WarehouseSKU), WarehouseData_60Days AS (
+    SELECT p.WarehouseSKU, COALESCE(SUM(sd.QtyShipped), 0) AS _60DaysUnitSales
+    FROM (SELECT DISTINCT WarehouseSKU FROM tblProduct) p 
+    LEFT JOIN tblSKU s ON s.WarehouseSKU = p.WarehouseSKU 
+    LEFT JOIN tblMappingSKU m ON m.idSKU = s.idSKU 
+    LEFT JOIN tblOrderAndShipmentDetail sd ON sd.SellerSKU = m.SKU 
+    AND sd.UpdatedDatetime >= DATEADD(DAY, -60, CONVERT(datetime, GETDATE()))
+    GROUP BY p.WarehouseSKU), WarehouseData_90Days AS (
+    SELECT p.WarehouseSKU, COALESCE(SUM(sd.QtyShipped), 0) AS _90DaysUnitSales
+    FROM (SELECT DISTINCT WarehouseSKU FROM tblProduct) p 
+    LEFT JOIN tblSKU s ON s.WarehouseSKU = p.WarehouseSKU 
+    LEFT JOIN tblMappingSKU m ON m.idSKU = s.idSKU 
+    LEFT JOIN tblOrderAndShipmentDetail sd ON sd.SellerSKU = m.SKU 
+    AND sd.UpdatedDatetime >= DATEADD(DAY, -90, CONVERT(datetime, GETDATE()))
+    GROUP BY p.WarehouseSKU)
+    SELECT p.WarehouseSKU, 7 AS 'day', COALESCE(SUM(wd._7DaysUnitSales), 0) AS 'unitsSold',
+    tblWeight.[7Days] AS 'weight', tblWeight.WeightId, p.WarehouseQty
+    FROM tblProduct p
+    LEFT JOIN WarehouseData_7Days wd ON p.WarehouseSKU = wd.WarehouseSKU
+    LEFT JOIN tblWeight ON p.idProduct = tblWeight.idProduct WHERE p.idProduct = @idProduct
+    GROUP BY tblWeight.WeightId, p.WarehouseSKU, tblWeight.[7Days], p.WarehouseQty
+                                      
+    UNION ALL
+                                      
+    SELECT p.WarehouseSKU, 30 AS 'day', COALESCE(SUM(wd._30DaysUnitSales), 0) AS 'unitsSold',
+    tblWeight.[30Days] AS 'weight', tblWeight.WeightId, p.WarehouseQty
+    FROM tblProduct p
+    LEFT JOIN WarehouseData_30Days wd ON p.WarehouseSKU = wd.WarehouseSKU
+    LEFT JOIN tblWeight ON p.idProduct = tblWeight.idProduct WHERE p.idProduct = @idProduct
+    GROUP BY tblWeight.WeightId, p.WarehouseSKU, tblWeight.[30Days], p.WarehouseQty
+                                      
+    UNION ALL
+                                      
+    SELECT p.WarehouseSKU, 60 AS 'day', COALESCE(SUM(wd._60DaysUnitSales), 0) AS 'unitsSold',
+    tblWeight.[60Days] AS 'weight', tblWeight.WeightId, p.WarehouseQty
+    FROM tblProduct p
+    LEFT JOIN WarehouseData_60Days wd ON p.WarehouseSKU = wd.WarehouseSKU
+    LEFT JOIN tblWeight ON p.idProduct = tblWeight.idProduct WHERE p.idProduct = @idProduct
+    GROUP BY tblWeight.WeightId, p.WarehouseSKU, tblWeight.[60Days], p.WarehouseQty
+                                      
+    UNION ALL
+                                      
+    SELECT p.WarehouseSKU, 90 AS 'day', COALESCE(SUM(wd._90DaysUnitSales), 0) AS 'unitsSold',
+    tblWeight.[90Days] AS 'weight', tblWeight.WeightId, p.WarehouseQty
+    FROM tblProduct p
+    LEFT JOIN WarehouseData_90Days wd ON p.WarehouseSKU = wd.WarehouseSKU
+    LEFT JOIN tblWeight ON p.idProduct = tblWeight.idProduct WHERE p.idProduct = @idProduct
+    GROUP BY tblWeight.WeightId, p.WarehouseSKU, tblWeight.[90Days], p.WarehouseQty
+END
+GO

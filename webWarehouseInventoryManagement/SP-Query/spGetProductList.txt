@@ -1,0 +1,36 @@
+CREATE PROCEDURE spGetProductList 
+	-- Add the parameters for the stored procedure here	  
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	WITH WarehouseData AS (
+        SELECT p.WarehouseSKU, COALESCE(SUM(sd.QtyShipped), 0) AS _30DaysUnitSales
+        FROM (SELECT DISTINCT WarehouseSKU FROM tblProduct) p 
+        LEFT JOIN tblSKU s ON s.WarehouseSKU = p.WarehouseSKU
+        LEFT JOIN tblMappingSKU m ON m.idSKU = s.idSKU
+        LEFT JOIN tblOrderAndShipmentDetail sd ON sd.SellerSKU = m.SKU
+            AND sd.DateAdd >= DATEADD(DAY, -30, CONVERT(datetime, GETDATE())) 
+        GROUP BY p.WarehouseSKU
+    )
+
+    SELECT 
+        p.idProduct, 
+        p.WarehouseSKU,
+        p.ProductCost,
+        p.ProductTitle,
+        p.TotalCost,
+        p.ImagePath,
+        p.WarehouseQty,
+        p.ProductSource,
+        COALESCE(wd._30DaysUnitSales, NULL) as _30DaysUnitSales,
+        CONVERT(varchar(20), p.UpdatedDate, 101) + ' ' + CONVERT(varchar(20), CONVERT(TIME, p.UpdatedDate), 100) as UpdatedDate 
+    FROM 
+        dbo.tblProduct p
+    LEFT JOIN 
+        WarehouseData wd ON p.WarehouseSKU = wd.WarehouseSKU 
+END
+GO

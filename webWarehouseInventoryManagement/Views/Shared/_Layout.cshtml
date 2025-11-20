@@ -1,0 +1,425 @@
+﻿@using webWarehouseInventoryManagement.Service
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="~/favicon.png" type="image/png" rel="shortcut icon">
+    <meta name="author" content="Dharmil patel">
+    <meta name="description" content="Warehouse inventory management tool">
+
+    <title>@ViewData["Title"] | Warehouse inventory management</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link href="~/plugins/fontawesome-free/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- overlayScrollbars -->
+    <link rel="stylesheet" href="~/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/css/adminlte.min.css">
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.1.3/css/fixedHeader.dataTables.min.css">
+
+    <!------Toastr--------->
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.css" rel="stylesheet" />
+
+    <!-------- Sweet alert------->
+    <link href="~/plugins/sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+
+    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Handler for local scripts -->
+    @RenderSection("Styles", required: false)
+    <style>
+        #myBtn {
+            box-shadow: rgb(128, 128, 128) 0px 2px 6px 0px;
+            border-radius: 8px;
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 90;
+            cursor: pointer;
+            display: none;
+            -webkit-border-radius: 60px;
+            -moz-border-radius: 60px;
+            transition: opacity 0.2s ease-out;
+        }
+
+        .sidebar-mini.sidebar-collapse .main-sidebar:not(.sidebar-no-expand).sidebar-focused, .sidebar-mini.sidebar-collapse .main-sidebar:not(.sidebar-no-expand):hover {
+        width: 260px;
+    }
+    </style>
+
+</head>
+<body class="hold-transition sidebar-mini sidebar-collapse" id="orderpagebodystyleid">
+    <!-- Site wrapper -->
+    <div class="wrapper positionrow">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light ">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+               
+                <!--  -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="@Url.ActionLink("logout", "Login")">Log out</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
+                @*<li class="nav-item">
+                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                        <i class="fas fa-th-large"></i>
+                    </a>
+                </li>*@
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4 position-fixed">
+            <!-- Brand Logo -->
+            <a href="@Url.ActionLink("Index", "WarehouseInventory")" class="brand-link">
+                <img src="~/img/noimage.png" alt="User Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light"><strong class="font-bold">@User.Identity.Name</strong></span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar ">
+
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                   <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                      @* Get accessible pages from user claims *@
+                      @{
+                          var isAdmin = User.IsInRole("Admin");
+
+                          var accessiblePages = User.Claims
+                              .FirstOrDefault(c => c.Type == "AccessiblePages")
+                              ?.Value?.Split(',') ?? Array.Empty<string>();
+                      }
+
+                      @* Warehouse Inventory *@
+                      @if (isAdmin || accessiblePages.Contains("/WarehouseInventory/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "WarehouseInventory")" class="nav-link">
+                                 @*  <i class="nav-icon fas fa-warehouse"></i> *@
+                                    <img class="nav-icon" src="~/img/1warehouse.svg" width="35px" />
+                                  <p>Warehouse Inventory</p>
+                              </a>
+                          </li>
+                      }
+                     @* FBA Inventory *@
+                        @if (isAdmin || accessiblePages.Contains("/FBAInventory/Index", StringComparer.OrdinalIgnoreCase))
+                        {
+                            <li class="nav-item">
+                                <a href="@Url.ActionLink("Index", "FBAInventory")" class="nav-link">
+                                    @*  <i class="nav-icon fas fa-box"></i> *@
+                                    <img src="~/img/2amazon_Icon.svg" width="32px" />
+                                    <p>FBA Inventory</p>
+                                </a>
+                            </li>
+                        }
+                      @* Product Catalogue *@
+                      @if (isAdmin || accessiblePages.Contains("/Catalogue/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "Catalogue")" class="nav-link">
+                                  @* <i class="nav-icon fas fa-tachometer-alt"></i> *@
+                                    <img class="nav-icon" src="~/img/3catalog.svg" width="42px" />
+                                  <p>Product Catalogue</p>
+                              </a>
+                          </li>
+                      }
+                      @* Sales Page *@
+                      @if (isAdmin || accessiblePages.Contains("/SalesPage/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "SalesPage")" class="nav-link">
+                                  @* <i class="nav-icon fa fa-bar-chart"></i> *@
+                                    <img class="nav-icon" src="~/img/4histogram.svg" width="42px" />
+                                  <p>Sales Page</p>
+                              </a>
+                          </li>
+                      }
+                      @* Order Page *@
+                      @if (isAdmin || accessiblePages.Contains("/Order/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "Order")" class="nav-link">
+                                 @*  <i class="nav-icon fas fa-shopping-cart"></i> *@
+                                    <img class="nav-icon" src="~/img/5purchase-order.svg" width="42px" />
+                                  <p>Order Page</p>
+                              </a>
+                          </li>
+                      }
+
+                      @* Unmapped Inventory *@
+                      @if (isAdmin || accessiblePages.Contains("/UnmappedInventory/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "UnmappedInventory")" class="nav-link">
+                                  @* <i class="nav-icon fas fa-clipboard-list"></i> *@
+                                    <img class="nav-icon" src="~/img/6Unmapp_logo.svg" width="42px" />
+                                    <p>Unmapped Inventory</p>
+                              </a>
+                          </li>
+                      }
+                      @* Additional Products Mapping *@
+                      @if (isAdmin || accessiblePages.Contains("/AdditionalProductsMapping/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "AdditionalProductsMapping")" class="nav-link">
+                                 @*  <i class="nav-icon fas fa-link"></i> *@
+                                    <img class="nav-icon" src="~/img/7Additional.svg" width="42px" />
+                                  <p>Additional Products</p>
+                              </a>
+                          </li>
+                      }
+                      @* SKU Mapping *@
+                      @if (isAdmin || accessiblePages.Contains("/MappingSKU/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "MappingSKU")" class="nav-link">
+                                  @* <i class="nav-icon fas fa-link"></i> *@
+                                    <img class="nav-icon" src="~/img/8Mapped_Logo.svg" width="42px" />
+                                  <p>SKU Mapping</p>
+                              </a>
+                          </li>
+                      }
+                      @* Amazon Mapping SKU *@
+                      @if (isAdmin || accessiblePages.Contains("/AmazonMappingSKU/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "AmazonMappingSKU")" class="nav-link">
+                                  @* <i class="nav-icon fa fa-amazon"></i> *@
+                                    <img class="nav-icon" src="~/img/9Bundel_Product.svg" width="42px" />
+                                  <p>Mapping SKU and Quantity</p>
+                              </a>
+                          </li>
+                      }
+                        @* Listing form *@
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <img class="nav-icon" src="~/img/listing_form.svg" width="42px" alt="Listing Form" />
+                                <p>
+                                    Listing Form
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                 @* Tenerate Template *@
+                                @if (isAdmin || accessiblePages.Contains("/ListingForm/Index", StringComparer.OrdinalIgnoreCase))
+                                {
+                                    <li class="nav-item">
+                                        <a href="@Url.ActionLink("Index", "ListingForm")" class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Generate Template </p>
+                                        </a>
+                                    </li>
+                                }
+                                @* Templates List< *@
+                                @if (isAdmin || accessiblePages.Contains("/ListingForm/ListingFormListPage", StringComparer.OrdinalIgnoreCase))
+                                {
+                                    <li class="nav-item">
+                                        <a href="@Url.ActionLink("ListingFormListPage", "ListingForm")" class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Templates List</p>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                      @* Manage User *@
+                      @if (isAdmin || accessiblePages.Contains("/ManageUser/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "ManageUser")" class="nav-link">
+                                  @* <i class="nav-icon fas fa-user"></i> *@
+                                    <img class="nav-icon" src="~/img/10profile.svg" width="42px" />
+                                  <p>Manage User</p>
+                              </a>
+                          </li>
+                      }
+                      @* Logs *@
+                      @if (isAdmin || accessiblePages.Contains("/LogResult/Index", StringComparer.OrdinalIgnoreCase))
+                      {
+                          <li class="nav-item">
+                              <a href="@Url.ActionLink("Index", "LogResult")" class="nav-link">
+                                  @* <i class="nav-icon fa fa-align-center"></i> *@
+                                    <img class="nav-icon" src="~/img/11log.svg" width="42px" />
+                                  <p>Logs</p>
+                              </a>
+                          </li>
+                      }
+
+                  </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper" >
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-8">
+                            <h1>@ViewData["Title"]</h1>
+                        </div>
+                        @if (ViewBag.OrdersScrapeTime != null)
+                        {
+                            <div class="col-sm-4" style="text-align: right">
+                                <div class="search-bar flex-grow-1">
+                                    <div class="position-relative search-bar-box">
+                                        <strong>Orders were last scraped at : </strong>@ViewBag.OrdersScrapeTime
+                                    </div>
+                                    <div class="position-relative search-bar-box">
+                                        <strong>Notes were last updated at : </strong>@ViewBag.OrdersNotesUpdateTime
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div><!-- /.container-fluid -->
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
+
+       
+    </div>
+    <button class="go-top btn btn-default btn-sm" id="myBtn">
+        Back to Top <i class="fa fa-angle-up"></i>
+    </button>
+    <!-- ./wrapper -->
+    <!-- REQUIRED SCRIPTS -->
+    <!-- jQuery -->
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.11/jquery.validate.unobtrusive.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- overlayScrollbars -->
+    <script src="~/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="~/js/adminlte.js"></script>
+
+    <!-- PAGE PLUGINS -->
+    <!-- ChartJS -->
+    <script src="~/plugins/chart.js/Chart.min.js"></script>
+
+
+    <!------Toastr--------->
+    <script src="~/plugins/toastr/toastr.min.js"></script>
+
+    <!-- Sweetalert-->
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.all.js"></script>
+    <!-- bs-custom-file-input -->
+  
+
+    <!--Datatable-->
+    <script src="~/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="~/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="~/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.1.3/js/dataTables.fixedHeader.min.js" type="text/javascript"></script>
+
+    <!--Excel-->
+    <script src="~/plugins/jszip/jszip.min.js"></script>
+
+    <script src="~/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+
+    <script src="~/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+
+    <script src="~/plugins/select2/js/select2.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
+
+    <script src="~/js/demo.js"></script>
+
+    <!-- Handler for local scripts -->
+    @RenderSection("scripts", required: false)
+
+    <script>
+        $(function () {
+            let successMsg = document.getElementById('successmsg');
+            if (successMsg != null) {
+                setTimeout(function () {
+                    $(".alert").fadeTo(1000, 0).slideUp(1000, function () {
+                        successMsg.style.display = "none"
+                    });
+
+                }, 5000);
+            }
+
+            let errorMsg = document.getElementById('errormsg');
+            if (errorMsg != null) {
+                setTimeout(function () {
+                    $(".alert").fadeTo(1000, 0).slideUp(1000, function () {
+                        errorMsg.style.display = "none"
+                    });
+
+                }, 5000);
+            }
+
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 100) {
+                    $('#myBtn').fadeIn();
+                } else {
+                    $('#myBtn').fadeOut();
+                }
+            });
+            $('#myBtn').click(function () {
+                $("html, body").animate({ scrollTop: 0 }, 600);
+                return false;
+            });
+        });
+
+    </script>
+
+</body>
+</html>

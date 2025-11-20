@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Sample functionality page";
+}
+
+
+<div class="col-md-12">
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title">Sample functionality page</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+
+                    <!--Upload excel form-->
+                    <form method="post" enctype="multipart/form-data" asp-controller="Sample" asp-action="Index">
+                        <div class="form-group">
+                            <label for="exampleInputFile">File input</label>
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" name="postedExcel" id="inputExcel">
+                                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                </div>
+                                <div class="input-group-append">
+                                    <input class="btn btn-block btn-primary" type="submit" value="Upload Excel" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="col-md-6">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">Sample functionality page</h3>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">Sample functionality page</h3>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- bs-custom-file-input -->
+<script src="~/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
+
+@section Scripts{
+    <script>
+        $(function () {
+            bsCustomFileInput.init();
+        });
+    </script>
+}
+
+

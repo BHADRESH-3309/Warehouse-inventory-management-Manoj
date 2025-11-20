@@ -1,0 +1,1310 @@
+﻿@model webWarehouseInventoryManagement.Models.ListingFormModel
+@{
+    // ViewData["Title"] = "Generate Template";
+    ViewData["Title"] = ViewBag.Title;
+}
+
+@section Styles {
+    <style>
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border: 1px solid #ced4da !important;
+            outline: 0;
+            border-radius: .25rem;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #007bff;
+            border-color: #006fe6;
+            color: #fff;
+            padding: 0 10px;
+            margin-top: .31rem;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: rgba(255, 255, 255, .7);
+            float: right;
+            margin-left: 5px;
+            margin-right: -2px;
+        }
+
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid #ced4da !important;
+            border-radius: .25rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .select2-container {
+            width: 100% !important; /* Full width inside col */
+        }
+
+        .select2-selection--multiple {
+            min-height: 38px !important;
+            border-radius: 0.375rem !important; /* Bootstrap form-control radius */
+            border: 1px solid #ced4da !important;
+        }
+
+        @@media (max-width: 992px) {
+            .marginClass {
+                margin-bottom: 2% !important;
+            }
+        }
+
+    </style>
+    <style>
+        #colours + .select2-container .select2-selection--multiple {
+            border: 1px solid #ced4da;
+            border-radius: .375rem;
+            min-height: calc(2.25rem + 2px); /* same as .form-select */
+            display: flex;
+            cursor: pointer;
+            position: relative;
+            background-color: #fff;
+            /* Bootstrap’s native arrow */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 11px 11px;
+        }
+
+
+        #colours + .select2-container.select2-container--open .select2-selection--multiple::after {
+            border-top: none;
+            border-bottom: 5px solid #999;
+        }
+
+        #colours + .select2-container .select2-selection--multiple .select2-selection__rendered {
+            padding-right: 30px;
+        }
+
+
+        /* Hide the Bootstrap arrow if any value is selected */
+        .select2-container.hide-arrow .select2-selection--multiple {
+            background-image: none !important;
+        }
+    </style>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible m-3" id="successmsg">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        @TempData["SuccessMessage"]
+
+    </div>
+}
+else if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger alert-dismissible m-3" id="errormsg">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        @ViewBag.ErrorMessage
+    </div>
+}
+<div class="col-md-12">
+    <div class="card card-primary">
+        <div class="card-header">
+           @*  <h3 class="card-title">Listing Form</h3> *@
+            <h3 class="card-title">@ViewBag.Title</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Index" asp-controller="ListingForm" method="post">
+                <input type="hidden"  asp-for="idListingProduct" />
+                <div class="row">
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="ListingProduct">Listing Product:</label>
+                        <select id="listingProduct" asp-for="ListingProduct" class="form-control">
+                            <option value="" selected>Select</option>
+                            <option value="TShirt">T-Shirt</option>
+                            <option value="Hoodie">Hoodie</option>
+                            <option value="Polo">Polo</option>
+                            <option value="Sweatshirt">Sweatshirt</option>
+                        </select>
+                        <span asp-validation-for="ListingProduct" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="NumberOfStyles">Number Of Styles:</label>
+                        <select id="numberOfStyles" asp-for="NumberOfStyles" data-selected="@Model?.NumberOfStyles" class="form-control">
+                            <option value="" selected>Select</option>
+                        </select>
+                        <span asp-validation-for="NumberOfStyles" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="Colour">Colours:</label>
+                        <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" asp-items="@(new SelectList(Model.Colors, "idColor", "Color"))" multiple="multiple" autocomplete="off">
+                            <option value="all">All</option>
+                        </select>
+                        <span asp-validation-for="Colour" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="Size">Sizes :</label>
+                        <div class="col-lg-12 d-flex" style="padding:0px !important;">
+                            <select class="form-control" id="sizeType" asp-for="Size">
+                                <option value="" selected>Select</option>
+                                <option value="all">All</option>
+                                <option value="Kids">Kids</option>
+                                <option value="Adults">Adults</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Size" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <!-- Adult Sizes -->
+                    <div id="adultSizesSection" class="col-lg-6 size-group marginClass hidden">
+                        <label asp-for="AdultSize">Adult Sizes</label>
+                        <div class="col-lg-12 d-flex" style="padding:0px !important;">
+                            <select class="form-select js-brand-multiselect" id="adultSizes" asp-for="AdultSize" multiple="multiple" style="width:350px !important;" autocomplete="off">
+                                <option value="all">All</option>
+                                @if (ViewBag.AdultSizes != null)
+                                {
+                                    @foreach (var size in (IEnumerable<SizeModel>)ViewBag.AdultSizes)
+                                    {
+                                        <option value="@size.SizeName">@size.SizeName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <span asp-validation-for="AdultSize" class="text-danger"></span>
+                    </div>
+
+                    <!-- Kids Sizes -->
+                    <div id="kidsSizesSection" class="col-lg-6 size-group hidden">
+                        <label asp-for="KidsSize">Kids Sizes</label>
+                        <div class="col-lg-12 d-flex" style="padding:0px !important;">
+                            <select class="form-select js-brand-multiselect" asp-for="KidsSize" id="kidsSizes" multiple="multiple" style="width:350px !important;" autocomplete="off">
+                                <option value="all">All</option>
+                                @if (ViewBag.KidsSizes != null)
+                                {
+                                    @foreach (var size in (IEnumerable<SizeModel>)ViewBag.KidsSizes)
+                                    {
+                                        <option value="@size.SizeName">@size.SizeName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <span asp-validation-for="KidsSize" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-lg-4 marginClass">
+                        <label asp-for="CategoryName">Category Name :</label>
+                        <input class="form-control" asp-for="CategoryName" placeholder="Enter category name" onkeypress=" return Whitespace(event)" />
+                        <span asp-validation-for="CategoryName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-lg-8 marginClass">
+                        <label asp-for="Title">Title  :</label>
+                        <input class="form-control" asp-for="Title" placeholder="Enter title" onkeypress=" return Whitespace(event)" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="StyleNameOption">Style Name:</label>
+                        <select id="styleOption" asp-for="StyleNameOption" class="form-control">
+                            <option value="" selected>Select</option>
+                            <option value="None">None</option>
+                            <option value="New">New</option>
+                        </select>
+                        <span asp-validation-for="StyleNameOption" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="PriceChange"> Change Fixed Price:</label>
+                        <select id="priceChange" asp-for="PriceChange" class="form-control">
+                            <option value="" selected>Select</option>
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                        <span asp-validation-for="PriceChange" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="CountryOfOrigin"> Country Of Origin:</label>
+                        <select id="CountryOfOrigin" asp-for="CountryOfOrigin" asp-items="@(new SelectList(Model.Countrys, "idCountryOfOrigin", "Country"))" class="form-control">
+                            <option value="" selected>Select</option>
+                        </select>
+                        <span asp-validation-for="CountryOfOrigin" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3">
+                        <label asp-for="DesignType"> Design Type:</label>
+                        <select id="DesignType" asp-for="DesignType" asp-items="@(new SelectList(Model.DesignTypes, "idListingDesignType", "DesignType"))" class=" form-control">
+                        </select>
+                        <span asp-validation-for="DesignType" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Image section -->
+                <div class="row">
+                    <div id="imageFieldsSection" class="col-lg-12">
+                        @if (Model?.StyleImages != null && Model.StyleImages.Any())
+                        {
+                            for (int i = 0; i < Model.StyleImages.Count; i++)
+                            {
+                                var style = Model.StyleImages[i];
+                                <div class="row mb-3">
+                                    @for (int j = 0; j < style.ColorImages.Count; j++)
+                                    {
+                                        var colorImage = style.ColorImages[j];
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Style @(i + 1) - @colorImage.ColorName - Main Image URL</label>
+                                            <input type="text"
+                                                   name="StyleImages[@i].ColorImages[@j].MainImage"
+                                                   class="form-control main-image-field"
+                                                   data-field-index="@i-@j"
+                                                   placeholder="Enter main image URL for Style @(i + 1) - @colorImage.ColorName"
+                                                   value="@colorImage.MainImage" />
+                                            <input type="hidden" name="StyleImages[@i].ColorImages[@j].idColor" value="@colorImage.idColor" />
+                                            <input type="hidden" name="StyleImages[@i].ColorImages[@j].ColorName" value="@colorImage.ColorName" />
+                                            <span class="text-danger validation-span"></span>
+                                        </div>
+                                    }
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Style @(i + 1) - Other Image URL</label>
+                                        <input type="text"
+                                               name="StyleImages[@i].OtherImage"
+                                               class="form-control other-image-field"
+                                               data-field-index="@i"
+                                               placeholder="Enter other image URL for Style @(i + 1)"
+                                               value="@style.OtherImage" />
+                                        <span class="text-danger validation-span"></span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Style name section -->
+                <div id="styleNamesSection" class="@(Model?.StyleNameOption == "New" ? "" : "hidden")">
+                    <div id="styleNameFields" class="row">
+                        @if (Model?.StyleNames != null && Model.StyleNames.Any())
+                        {
+                            for (int i = 0; i < Model.StyleNames.Count; i++)
+                            {
+                                <div class="col-md-6 mb-4">
+                                    <label asp-for="@Model.StyleNames[i]" class="form-label">Style Name @(i + 1)</label>
+                                    <input asp-for="@Model.StyleNames[i]" class="form-control" placeholder="Enter style name @(i+1)" />
+                                    <span asp-validation-for="@Model.StyleNames[i]" class="text-danger"></span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Custom Prices Section -->
+                <div id="customPricesSection" class="@(Model?.PriceChange == "Yes" ? "" : "hidden")">
+                    <div class="row mb-4">
+                        <!-- Adult Price -->
+                        <div class="col-md-6 marginClass" id="adultPriceField"
+                             style="@(Model?.PriceChange == "Yes" && (Model?.Size == "Adults" || Model?.Size == "all") ? "" : "display:none;")">
+                            <label asp-for="AdultPrice" class="form-label">Adult Price</label>
+                            <input type="text" class="form-control" asp-for="AdultPrice" id="adultPrice"
+                                   placeholder="Enter adult price" onkeypress="return isNumberAndDecimal(event,this)">
+                            <span asp-validation-for="AdultPrice" class="text-danger"></span>
+                        </div>
+
+                        <!-- Kids Price -->
+                        <div class="col-md-6" id="kidsPriceField"
+                             style="@(Model?.PriceChange == "Yes" && (Model?.Size == "Kids" || Model?.Size == "all") ? "" : "display:none;")">
+                            <label asp-for="KidsPrice" class="form-label">Kids Price</label>
+                            <input type="text" class="form-control" asp-for="KidsPrice" id="kidsPrice"
+                                   placeholder="Enter kids price" onkeypress="return isNumberAndDecimal(event,this)">
+                            <span asp-validation-for="KidsPrice" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="row mb-4">
+
+                    <div class="col-lg-6 marginClass">
+                        <label asp-for="Description" class="form-label">Description:</label>
+                        <textarea id="description" asp-for="Description" class="form-control" rows="3" placeholder="Enter description" onkeypress="return Whitespace(event)"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-6">
+                        <label asp-for="SearchTerms">Search Terms:</label>
+                        <textarea class="form-control" rows="3" asp-for="SearchTerms" placeholder="Enter search terms" onkeypress=" return Whitespace(event)"></textarea>
+                    </div>
+                </div>
+                <!-- Bullet Points -->
+                <div class="row align-items-start mb-4  d-flex justify-content-between">
+
+                    <div class="col-lg-2">
+                        <label asp-for="Bp1" class="form-label">Bullet Points:</label>
+                        <textarea id="bp1" class="form-control" asp-for="Bp1" rows="3" placeholder="Point 1" onkeypress=" return Whitespace(event)"></textarea>
+                        <span asp-validation-for="Bp1" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label invisible" asp-for="Bp2">Bullet Points:</label>
+                        <textarea class="form-control" rows="3" asp-for="Bp2" placeholder="Point 2" onkeypress=" return Whitespace(event)"></textarea>
+                        <span asp-validation-for="Bp2" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label invisible" asp-for="Bp3">Bullet Points:</label>
+                        <textarea class="form-control" rows="3" asp-for="Bp3" placeholder="Point 3" onkeypress=" return Whitespace(event)"></textarea>
+                        <span asp-validation-for="Bp3" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label invisible" asp-for="Bp4">Bullet Points:</label>
+                        <textarea class="form-control" asp-for="Bp4" rows="3" placeholder="Point 4" onkeypress=" return Whitespace(event)"></textarea>
+                        <span asp-validation-for="Bp4" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label invisible" asp-for="Bp5">Bullet Points:</label>
+                        <textarea class="form-control" rows="3" placeholder="Point 5" asp-for="Bp5" onkeypress=" return Whitespace(event)"></textarea>
+                        <span asp-validation-for="Bp5" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12 d-flex justify-content-end" style="margin-top:20px">
+                    <button type="submit" id="btnSubmit" class="btn btn-success ml-4 btnSave">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+
+            let selected = $('#numberOfStyles').data('selected'); // get value from razor
+            for (let i = 1; i <= 15; i++) {
+                let isSelected = (i == selected) ? "selected" : "";
+                $('#numberOfStyles').append(`<option value="${i}" ${isSelected}>${i}</option>`);
+            }
+        });
+
+        let dropdownState = {};
+        let selectedSizes = {};
+        let selectedcolors = {};
+        let formData = {};
+      
+        $(document).ready(function () {
+            initializeDropdowns();
+            attachEventHandlers();
+            attachSizeAllHandlers();
+
+            if ($('#adultSizes').val() && $('#adultSizes').val().length > 0) {
+                $('#adultSizesSection').removeClass('hidden');
+                const $row = $('.row.mt-4'); // your row container
+                $row.addClass('mb-4')
+            }
+            if ($('#kidsSizes').val() && $('#kidsSizes').val().length > 0) {
+                $('#kidsSizesSection').removeClass('hidden');
+                const $row = $('.row.mt-4'); // your row container
+                $row.addClass('mb-4')
+            }
+
+            if ($('#colours').val() && $('#colours').val().length > 0) {
+                $('#colours').removeClass('hidden');
+            }
+
+        });
+
+        function initializeDropdowns() {
+
+            $('#adultSizes').select2({
+                placeholder: "Select Adult Size(s)",
+                allowClear: true
+            });
+
+            $('#kidsSizes').select2({
+                placeholder: "Select Kids Size(s)",
+                allowClear: true
+            });
+
+            $('#colours').select2({
+                placeholder: "Select",
+                allowClear: true
+            });
+
+        }
+
+        function attachEventHandlers() {
+            // Size Type handler with the complex logic
+            $('#sizeType').on('change', function () {
+                handleSizeTypeChange();
+            });
+
+            // Style option handler
+            $('#styleOption').on('change', function () {
+                handleStyleOptionChange();
+            });
+            
+            // Price change handler
+            $('#priceChange').on('change', function () {
+                handlePriceChangeOption();
+            });
+
+            // Adult and Kids sizes handlers
+            $('#adultSizes, #kidsSizes').on('change', function () {
+                updatePriceFields();
+            });
+
+            // Number of styles handler
+            $('#numberOfStyles').on('change', function () {
+                updateImageFields();
+                updateStyleNameFields();
+            });
+
+            // colors change handler
+            $('#colours').on('change', function () {
+                handleColoursChange();
+            });
+        }
+
+        function handleSizeTypeChange() {
+            const sizeType = 'sizeType';
+            if (!dropdownState[sizeType]) {
+                dropdownState[sizeType] = { isChanging: false, eventCount: 0 };
+            }
+
+            const state = dropdownState[sizeType];
+            const $dropdown = $(`#${sizeType}`);
+            let selectedValues = $dropdown.val() || [];
+
+            if (state.isChanging) return;
+            state.isChanging = true;
+
+            // Clear validation when any value is selected
+            if (selectedValues.length > 0) {
+                clearValidation(sizeType);
+            }
+
+
+            state.isChanging = false;
+            // Show/hide size sections based on selection
+            updateSizeSections(selectedValues);
+            updatePriceFields();
+        }
+
+        function updateSizeSections(selectedValues) {
+            const $row = $('.row.mt-4'); // your row container
+
+            const $adultSection = $('#adultSizesSection');
+            const $kidsSection = $('#kidsSizesSection');
+
+            // Hide both sections initially
+            $adultSection.addClass('hidden');
+            $kidsSection.addClass('hidden');
+
+            // Clear selections each time
+            $('#adultSizes').val(null).trigger('change');
+            $('#kidsSizes').val(null).trigger('change');
+
+
+            if (selectedValues.includes('all')) {
+                // Show both sections
+                $adultSection.removeClass('hidden');
+                $kidsSection.removeClass('hidden');
+                $row.addClass('mb-4');
+            } else {
+                if (selectedValues.includes('Adults')) {
+                    $adultSection.removeClass('hidden');
+                }
+                if (selectedValues.includes('Kids')) {
+                    $kidsSection.removeClass('hidden');
+                }
+                $row.addClass('mb-4');
+            }
+        }
+
+        function attachSizeAllHandlers() {
+            // Adult Sizes
+            $('#adultSizes').on('change', function () {
+                const adultSizes = 'adultSizes';
+                if (!dropdownState[adultSizes]) {
+                    dropdownState[adultSizes] = { isChanging: false, eventCount: 0 };
+                }
+
+                const state = dropdownState[adultSizes];
+                const $dropdown = $(`#${adultSizes}`);
+                let selectedValues = $dropdown.val() || [];
+
+                if (state.isChanging) return;
+                state.isChanging = true;
+
+                // Clear validation when any value is selected
+                if (selectedValues.length > 0) {
+                    clearValidation("AdultSize");
+                }
+                
+                // If nothing is selected
+                if (selectedValues.length === 0) {
+                    // Flag to handle for all selections
+                    state.eventCount = 0;
+                }
+                else if (selectedValues.length > 1) {
+                    // Flag to handle multiple selections
+                    state.eventCount++;
+                }
+                // Remove 'All' if other brands are selected
+                if (state.eventCount === 1) {
+                    selectedValues = selectedValues.filter(val => val !== 'all');
+                    $dropdown.val(selectedValues).trigger('change');
+                }
+                // Keep only 'All' if it's selected
+                else if (selectedValues.includes('all')) {
+                    selectedValues = ['all'];
+                    $dropdown.val(selectedValues).trigger('change');
+                    state.eventCount = 0;
+                }
+
+                state.isChanging = false;
+            });
+
+            // Kids Sizes
+            $('#kidsSizes').on('change', function () {
+
+                const kidsSizes = 'kidsSizes';
+                if (!dropdownState[kidsSizes]) {
+                    dropdownState[kidsSizes] = { isChanging: false, eventCount: 0 };
+                }
+
+                const state = dropdownState[kidsSizes];
+                const $dropdown = $(`#${kidsSizes}`);
+                let selectedValues = $dropdown.val() || [];
+
+                if (state.isChanging) return;
+                state.isChanging = true;
+
+                // Clear validation when any value is selected
+                if (selectedValues.length > 0) {
+                    clearValidation("KidsSize");
+                }
+
+                // If nothing is selected, 
+                if (selectedValues.length === 0) {
+                    // Flag to handle for all selections
+                    state.eventCount = 0;
+                }
+                else if (selectedValues.length > 1) {
+                    // Flag to handle multiple selections
+                    state.eventCount++;
+                }
+
+                // Remove 'All' if other brands are selected
+                if (state.eventCount === 1) {
+                    selectedValues = selectedValues.filter(val => val !== 'all');
+                    $dropdown.val(selectedValues).trigger('change');
+                }
+                // Keep only 'All' if it's selected
+                else if (selectedValues.includes('all')) {
+                    selectedValues = ['all'];
+                    $dropdown.val(selectedValues).trigger('change');
+                    state.eventCount = 0;
+                }
+
+                state.isChanging = false;
+            });
+        }
+
+        function handleStyleOptionChange() {
+            const styleOption = $('#styleOption').val();
+            const numberOfStyles = parseInt($('#numberOfStyles').val()) || 0;
+
+            if (styleOption === 'New' && numberOfStyles > 0) {
+                $('#styleNamesSection').removeClass('hidden');
+                updateStyleNameFields();
+            } else {
+                $('#styleNamesSection').addClass('hidden');
+            }
+        }
+
+        function handleColoursChange() {
+            const colours = 'colours';
+            if (!dropdownState[colours]) {
+                dropdownState[colours] = { isChanging: false, eventCount: 0 };
+            }
+
+            const state = dropdownState[colours];
+            const $dropdown = $(`#${colours}`);
+            let selectedValues = $dropdown.val() || [];
+
+            // ✅ Use $dropdown instead of $(this)
+            let hasValue = $dropdown.val() && $dropdown.val().length > 0;
+            let container = $dropdown.next('.select2-container');
+
+            if (hasValue) {
+                container.addClass('hide-arrow');
+            } else {
+                container.removeClass('hide-arrow');
+            }
+
+            if (state.isChanging) return;
+            state.isChanging = true;
+
+            // Clear validation when any value is selected
+            if (selectedValues.length > 0) {
+                clearValidation("Colour");
+            }
+
+            if (selectedValues.length > 1) {
+                // Flag to handle multiple selections
+                state.eventCount++;
+            }
+
+            // Remove 'All' if other brands are selected
+            if (state.eventCount === 1) {
+                selectedValues = selectedValues.filter(val => val !== 'all');
+                $dropdown.val(selectedValues).trigger('change');
+            }
+            // Keep only 'All' if it's selected
+            else if (selectedValues.includes('all')) {
+                selectedValues = ['all'];
+                $dropdown.val(selectedValues).trigger('change');
+                state.eventCount = 0;
+            }
+            state.isChanging = false;
+
+            // Get selected brand texts
+            selectedcolors = $dropdown.find("option:selected").map(function () {
+                return $(this).text();
+            }).get().join(", ");
+
+            updateImageFields();
+        }
+
+        function updateStyleNameFields() {
+            const numberOfStyles = parseInt($('#numberOfStyles').val()) || 0;
+            const styleOption = $('#styleOption').val();
+            const $container = $('#styleNameFields');
+
+            $container.empty();
+
+            if (styleOption === 'New' && numberOfStyles > 0) {
+                for (let i = 0; i < numberOfStyles; i++) {
+                    const fieldHtml = `
+                                <div class="col-lg-3 mb-4">
+                                  <label for="StyleNames_${i}" class="form-label">Style Name ${i + 1}</label>
+                                  <input type="text"
+                                         class="form-control style-name-field"
+                                         id="StyleNames_${i}"
+                                         name="StyleNames[${i}]"
+                                         placeholder="Enter style name ${i + 1}"
+                                         data-field-index="${i}" onkeypress=" return Whitespace(event)">
+                                  <span class="text-danger field-validation-valid"
+                                        data-valmsg-for="StyleNames[${i}]"
+                                        data-valmsg-replace="true"></span>
+                                </div>`;
+                    $container.append(fieldHtml);
+                }
+                $('#styleNamesSection').removeClass('hidden');
+            } else {
+                $('#styleNamesSection').addClass('hidden');
+            }
+        }
+
+        // $('form').on('submit', function (e) {
+        //     let hasErrors = false;
+
+        //     // Clear previous errors
+        //     $('.field-validation-error').text('').removeClass('field-validation-error');
+
+        //     // Validate style name fields
+        //     $('.style-name-field').each(function () {
+        //         const $field = $(this);
+        //         if (!$field.val().trim()) {
+        //             hasErrors = true;
+        //             const fieldIndex = $field.data('field-index');
+
+        //             // Find the corresponding validation span
+        //             const fieldName = $field.attr('name');
+        //             const $validationSpan = $(`span[data-valmsg-for='${fieldName}']`);
+
+        //             $validationSpan.addClass('field-validation-error text-danger');
+        //             $validationSpan.text(`Please enter the style name ${fieldIndex + 1}`);
+        //         }
+        //     });
+
+        //     $('.main-image-field').each(function () {
+        //         const $field = $(this);
+        //         if (!$field.val().trim()) {
+        //             hasErrors = true;
+
+        //             // Extract style number and color from input name
+        //             const styleIndexMatch = $field.attr('name').match(/StyleImages\[(\d+)\]/);
+        //             const colorMatch = $field.attr('name').match(/ColorImages\[\d+\]\.MainImage/);
+
+        //             const styleNumber = styleIndexMatch ? parseInt(styleIndexMatch[1]) + 1 : $field.data('field-index') + 1;
+        //             // Get the color label from the associated <label>
+        //             const colorName = $field.prev('label').text().split(' - ')[1] || '';
+
+        //             $field.siblings('.validation-span').text(`Please enter the main image URL for Style ${styleNumber} - ${colorName}`);
+        //         }
+        //     });
+
+        //     $('.other-image-field').each(function () {
+        //         const $field = $(this);
+        //         if (!$field.val().trim()) {
+        //             hasErrors = true;
+
+        //             const styleIndexMatch = $field.attr('name').match(/StyleImages\[(\d+)\]/);
+        //             const styleNumber = styleIndexMatch ? parseInt(styleIndexMatch[1]) + 1 : $field.data('field-index') + 1;
+
+        //             $field.siblings('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+        //         }
+        //     });
+        //     if (hasErrors) {
+        //         e.preventDefault();
+        //         $('.field-validation-error').first().focus();
+        //     }
+
+        //     // // Main Image
+        //     // $('.main-image-field').each(function () {
+        //     //     const $field = $(this);
+        //     //     if (!$field.val().trim()) {
+        //     //         hasErrors = true;
+        //     //         $field.siblings('.validation-span').text(`Please enter the main image URL for style ${$field.data('field-index')}`);
+        //     //     }
+        //     // });
+
+        //     // // Other Image
+        //     // $('.other-image-field').each(function () {
+        //     //     const $field = $(this);
+        //     //     if (!$field.val().trim()) {
+        //     //         hasErrors = true;
+        //     //         $field.siblings('.validation-span').text(`Please enter the other image URL for style ${$field.data('field-index')}`);
+        //     //     }
+        //     // });
+        //     // if (hasErrors) {
+        //     //     e.preventDefault();
+        //     //     $('.validation-span:visible').first().prev('input').focus();
+        //     // }
+        // });
+
+        $('form').on('submit', function (e) {
+            let hasErrors = false;
+            $('.validation-span').text(''); // clear previous errors
+
+
+            // Clear previous errors
+            $('.field-validation-error').text('').removeClass('field-validation-error');
+
+            // Validate style name fields
+            $('.style-name-field').each(function () {
+                const $field = $(this);
+                if (!$field.val().trim()) {
+                    hasErrors = true;
+                    const fieldIndex = $field.data('field-index');
+
+                    // Find the corresponding validation span
+                    const fieldName = $field.attr('name');
+                    const $validationSpan = $(`span[data-valmsg-for='${fieldName}']`);
+
+                    $validationSpan.addClass('field-validation-error text-danger');
+                    $validationSpan.text(`Please enter the style name ${fieldIndex + 1}`);
+                }
+            });
+
+            $('.main-image-field').each(function () {
+                const $field = $(this);
+                if (!$field.val().trim()) {
+                    hasErrors = true;
+                    const $container = $field.closest('.col-md-6');
+                    const labelText = $container.find('label').text();
+                    const match = labelText.match(/Style (\d+) - (.+) - Main Image/);
+                    const styleNumber = match ? match[1] : '?';
+                    const colorName = match ? match[2] : '?';
+                    $container.find('.validation-span').text(`Please enter the main image URL for Style ${styleNumber} - ${colorName}`);
+                }
+            });
+
+            $('.other-image-field').each(function () {
+                const $field = $(this);
+                if (!$field.val().trim()) {
+                    hasErrors = true;
+                    const $container = $field.closest('.col-md-6');
+                    const labelText = $container.find('label').text();
+                    const match = labelText.match(/Style (\d+) -/);
+                    const styleNumber = match ? match[1] : '?';
+                    $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+                }
+            });
+
+            if (hasErrors) {
+                e.preventDefault();
+                $('.validation-span:visible').first().closest('.col-md-6').find('input').focus();
+            }
+        });
+
+        function updateImageFields() {
+            // const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
+            // const $container = $('#imageFieldsSection');
+
+            const numberOfStyles = parseInt($('#numberOfStyles').val());
+
+            const $container = $('#imageFieldsSection');
+
+            // If number of styles is not selected or invalid, clear fields and return
+            if (!numberOfStyles || numberOfStyles <= 0) {
+                $container.empty();
+                return;
+            }
+
+            // Get selected colors
+            let colorOptions = $('#colours option:selected').map(function () {
+                return { id: $(this).val(), name: $(this).text() };
+            }).get();
+
+            // If 'all' is selected, use all colors except 'all'
+            if (colorOptions.some(c => c.id === 'all')) {
+                colorOptions = $('#colours option').map(function () {
+                    return { id: $(this).val(), name: $(this).text() };
+                }).get().filter(c => c.id !== 'all');
+            }
+
+            $container.empty();
+
+            if (colorOptions.length === 0) {
+                return;
+            }
+
+            for (let i = 0; i < numberOfStyles; i++) {
+                let row = '<div class="row mb-3">';
+
+                // Loop through **all colors dynamically**
+                colorOptions.forEach((color, index) => {
+                    row += `
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Style ${i + 1} - ${color.name} - Main Image URL</label>
+                            <input type="text" name="StyleImages[${i}].ColorImages[${index}].MainImage"
+                                   class="form-control main-image-field"
+                                   placeholder="Enter main image URL for Style ${i + 1} - ${color.name}"
+                                   data-field-index="${i}-${index}" />
+                            <span class="text-danger validation-span"></span>
+                                    <!-- Hidden ColorId -->
+                            <input type="hidden"
+                                   name="StyleImages[${i}].ColorImages[${index}].idColor"
+                                   value="${color.id}" />
+
+                            <!-- Hidden ColorName -->
+                            <input type="hidden"
+                                   name="StyleImages[${i}].ColorImages[${index}].ColorName"
+                                   value="${color.name}" />
+                        </div>`;
+                });
+
+                // Add "Other Image URL" for the style
+                row += `
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Style ${i + 1} - Other Image URL</label>
+                        <input type="text" name="StyleImages[${i}].OtherImage"
+                               class="form-control other-image-field"
+                               placeholder="Enter other image URL for Style ${i + 1}"
+                               data-field-index="${i}" />
+                        <span class="text-danger validation-span"></span>
+                    </div>`;
+
+                row += '</div>';
+                $container.append(row);
+            }
+
+            // Re-parse unobtrusive validation
+            $.validator.unobtrusive.parse($container);
+        }
+
+        // function updateImageFields() {
+        //     const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
+
+        //     const $container = $('#imageFieldsSection');
+
+        //     let colorOptions = $('#colours option:selected').map(function () {
+        //         return { id: $(this).val(), name: $(this).text() };
+        //     }).get();
+
+        //     // Replace 'all' if selected
+        //     if (colorOptions.some(c => c.id === 'all')) {
+        //         colorOptions = $('#colours option').map(function () {
+        //             return { id: $(this).val(), name: $(this).text() };
+        //         }).get().filter(c => c.id !== 'all');
+        //     }
+
+        //     $container.empty();
+
+        //     for (let i = 0; i < numberOfStyles; i++) {
+        //         const totalColors = colorOptions.length;
+        //         if (totalColors === 0) continue;
+
+        //         // ========================
+        //         // Row 1
+        //         // ========================
+        //         let row1 = '<div class="row mb-3">';
+
+        //         if (totalColors === 1) {
+        //             row1 += `
+        //                 <div class="col-md-6 mb-3">
+        //                     <label class="form-label">Style ${i + 1} - ${colorOptions[0].name} - Main Image URL</label>
+        //                     <input type="text" name="StyleImages[${i}].ColorImages[0].MainImage"
+        //                            class="form-control main-image-field"
+        //                            placeholder="Enter main image URL for Style ${i + 1} - ${colorOptions[0].name}"
+        //                            data-field-index="${i}" />
+        //                     <span class="text-danger validation-span"></span>
+        //                 </div>
+        //                 <div class="col-md-6 mb-3">
+        //                     <label class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                     <input type="text" name="StyleImages[${i}].OtherImage"
+        //                            class="form-control other-image-field"
+        //                            placeholder="Enter other image URL for Style ${i + 1}"
+        //                            data-field-index="${i}" />
+        //                     <span class="text-danger validation-span"></span>
+        //                 </div>`;
+        //         } else {
+        //             // first row = first 2 main images
+        //             for (let j = 0; j < Math.min(2, totalColors); j++) {
+        //                 const color = colorOptions[j];
+        //                 row1 += `
+        //                     <div class="col-md-6 mb-3">
+        //                         <label class="form-label">Style ${i + 1} - ${color.name} - Main Image URL</label>
+        //                         <input type="text" name="StyleImages[${i}].ColorImages[${j}].MainImage"
+        //                                class="form-control main-image-field"
+        //                                placeholder="Enter main image URL for Style ${i + 1} - ${color.name}"
+        //                                data-field-index="${i}-${j}" />
+        //                         <span class="text-danger validation-span"></span>
+        //                     </div>`;
+        //             }
+        //         }
+
+        //         row1 += '</div>';
+        //         $container.append(row1);
+
+        //         // ========================
+        //         // Row 2: for 2 or more colors
+        //         // ========================
+        //         if (totalColors >= 2) {
+        //             let row2 = '<div class="row mb-4">';
+
+        //             if (totalColors === 2) {
+        //                 row2 += `
+        //                     <div class="col-md-6 mb-3">
+        //                         <label class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                         <input type="text" name="StyleImages[${i}].OtherImage"
+        //                                class="form-control other-image-field"
+        //                                placeholder="Enter other image URL for Style ${i + 1}"
+        //                                data-field-index="${i}" />
+        //                         <span class="text-danger validation-span"></span>
+        //                     </div>
+        //                     <div class="col-md-6 mb-3"></div>`;
+        //             } else if (totalColors === 3) {
+        //                 const remainingColor = colorOptions[2];
+        //                 row2 += `
+        //                     <div class="col-md-6 mb-3">
+        //                         <label class="form-label">Style ${i + 1} - ${remainingColor.name} - Main Image URL</label>
+        //                         <input type="text" name="StyleImages[${i}].ColorImages[2].MainImage"
+        //                                class="form-control main-image-field"
+        //                                placeholder="Enter main image URL for Style ${i + 1} - ${remainingColor.name}"
+        //                                data-field-index="${i}-2" />
+        //                         <span class="text-danger validation-span"></span>
+        //                     </div>
+        //                     <div class="col-md-6 mb-3">
+        //                         <label class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                         <input type="text" name="StyleImages[${i}].OtherImage"
+        //                                class="form-control other-image-field"
+        //                                placeholder="Enter other image URL for Style ${i + 1}"
+        //                                data-field-index="${i}" />
+        //                         <span class="text-danger validation-span"></span>
+        //                     </div>`;
+        //             }
+
+        //             row2 += '</div>';
+        //             $container.append(row2);
+        //         }
+        //     }
+
+        //     // ========================
+        //     // Enable unobtrusive validation for dynamically added inputs
+        //     // ========================
+        //     $.validator.unobtrusive.parse($container);
+        // }
+
+
+        // function updateImageFields() {
+        //     const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
+        //     const $container = $('#imageFieldsSection');
+
+        //     const colorOptions = $('#colours option:selected').map(function () {
+        //         return { id: $(this).val(), name: $(this).text() };
+        //     }).get();
+
+        //     $container.empty();
+
+        //     for (let i = 0; i < numberOfStyles; i++) {
+        //         const totalColors = colorOptions.length;
+        //         if (totalColors === 0) continue;
+
+        //         // ========================
+        //         // Row 1
+        //         // ========================
+        //         let row1 = `<div class="row mb-3">`;
+
+        //         if (totalColors === 1) {
+        //             // 1 color: Left = Main Image, Right = Other Image
+        //             row1 += `
+        //                         <div class="col-md-6 mb-3">
+        //                             <label class="form-label">Style ${i + 1} - ${colorOptions[0].name} - Main Image URL</label>
+        //                             <input type="text"
+        //                                    name="StyleImages[${i}].ColorImages[0].MainImage"
+        //                                    class="form-control main-image-field"
+        //                                    placeholder="Enter main image URL for Style ${i + 1} - ${colorOptions[0].name}"
+        //                                    data-val="true"
+        //                                    data-val-required="Main Image is required" />
+        //                         </div>
+        //                         <div class="col-md-6 mb-3">
+        //                             <label class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                             <input type="text"
+        //                                    name="StyleImages[${i}].OtherImage"
+        //                                    class="form-control other-image-field"
+        //                                    placeholder="Enter other image URL for Style ${i + 1}"
+        //                                    data-val="true"
+        //                                    data-val-required="Other Image is required" />
+        //                         </div>`;
+        //         } else {
+        //             // 2 or more colors: first row = first 2 main images
+        //             for (let j = 0; j < 2 && j < totalColors; j++) {
+        //                 const color = colorOptions[j];
+        //                 row1 += `
+        //                             <div class="col-md-6 mb-3">
+        //                                 <label class="form-label">Style ${i + 1} - ${color.name} - Main Image URL</label>
+        //                                 <input type="text"
+        //                                        name="StyleImages[${i}].ColorImages[${j}].MainImage"
+        //                                        class="form-control main-image-field"
+        //                                        placeholder="Enter main image URL for Style ${i + 1} - ${color.name}"
+        //                                        data-val="true"
+        //                                        data-val-required="Main Image is required" />
+        //                             </div>`;
+        //             }
+        //         }
+
+        //         row1 += `</div>`;
+        //         $container.append(row1);
+
+        //         // ========================
+        //         // Row 2: Only for 2 or more colors
+        //         // ========================
+        //         if (totalColors >= 2) {
+        //             let row2 = `<div class="row mb-4">`;
+
+        //             if (totalColors === 2) {
+        //                 // Left = Other Image, Right empty
+        //                 row2 += `
+        //                             <div class="col-md-6 mb-3">
+        //                                 <label class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                                 <input type="text"
+        //                                        name="StyleImages[${i}].OtherImage"
+        //                                        class="form-control other-image-field"
+        //                                        placeholder="Enter other image URL for Style ${i + 1}"
+        //                                        data-val="true"
+        //                                        data-val-required="Other Image is required" />
+        //                             </div>
+        //                             <div class="col-md-6 mb-3"></div>`;
+        //             } else if (totalColors === 3) {
+        //                 // Left = remaining Main Image, Right = Other Image
+        //                 const remainingColor = colorOptions[2];
+        //                 row2 += `
+        //                             <div class="col-md-6 mb-3">
+        //                                 <label class="form-label">Style ${i + 1} - ${remainingColor.name} - Main Image URL</label>
+        //                                 <input type="text"
+        //                                        name="StyleImages[${i}].ColorImages[2].MainImage"
+        //                                        class="form-control main-image-field"
+        //                                        placeholder="Enter main image URL for Style ${i + 1} - ${remainingColor.name}"
+        //                                        data-val="true"
+        //                                        data-val-required="Main Image is required" />
+        //                             </div>
+        //                             <div class="col-md-6 mb-3">
+        //                                 <label class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                                 <input type="text"
+        //                                        name="StyleImages[${i}].OtherImage"
+        //                                        class="form-control other-image-field"
+        //                                        placeholder="Enter other image URL for Style ${i + 1}"
+        //                                        data-val="true"
+        //                                        data-val-required="Other Image is required" />
+        //                             </div>`;
+        //             }
+
+        //             row2 += `</div>`;
+        //             $container.append(row2);
+        //         }
+        //     }
+
+        //     // ========================
+        //     // Enable unobtrusive validation for dynamically added inputs
+        //     // ========================
+        //     $.validator.unobtrusive.parse($container);
+
+        //     // Re-validate form immediately
+        //     const form = $container.closest('form');
+        //     form.validate();
+        // }
+
+
+        /// old code
+        // function updateImageFields() {
+        //     const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
+        //     const $container = $('#imageFieldsSection');
+
+        //     $container.empty();
+
+        //     for (let i = 0; i < numberOfStyles; i++) {
+        //         const fieldHtml = `
+        //                     <div class="row">
+        //                         <div class="col-md-6 mb-4">
+        //                             <label for="StyleImages_${i}__MainImage" class="form-label">Style ${i + 1} - Main Image URL</label>
+        //                             <input type="text"  class="form-control main-image-field" id="StyleImages_${i}__MainImage"
+        //                                    name="StyleImages[${i}].MainImage" placeholder="Enter main image URL ${i + 1}"  data-field-index="${i}"
+        //                                    data-val="true" data-val-required="Please enter the main image URL ${i + 1}" onkeypress=" return Whitespace(event)">
+        //                             <span class="text-danger field-validation-valid"
+        //                                   data-valmsg-for="StyleImages[${i}].MainImage"
+        //                                   data-valmsg-replace="true"></span>
+        //                         </div>
+        //                         <div class="col-md-6 mb-4">
+        //                             <label for="StyleImages_${i}__OtherImage" class="form-label">Style ${i + 1} - Other Image URL</label>
+        //                             <input type="text" class="form-control other-image-field" id="StyleImages_${i}__OtherImage"
+        //                                    name="StyleImages[${i}].OtherImage" placeholder="Enter other image URL ${i + 1}"  data-field-index="${i}"
+        //                                    data-val="true" data-val-required="Please enter the other image URL ${i + 1}" onkeypress=" return Whitespace(event)">
+        //                             <span class="text-danger field-validation-valid"
+        //                                   data-valmsg-for="StyleImages[${i}].OtherImage"
+        //                                   data-valmsg-replace="true"></span>
+        //                         </div>
+        //                     </div>
+        //                 `;
+        //         $container.append(fieldHtml);
+        //     }
+
+        //     // re-parse validation for new fields
+        //     $.validator.unobtrusive.parse($container);
+        // }
+
+        function handlePriceChangeOption() {
+            const priceChange = $('#priceChange').val();
+            const $fixedSection = $('#fixedPricesSection');
+            const $customSection = $('#customPricesSection');
+
+            if (priceChange === 'Yes') {
+                $fixedSection.addClass('hidden');
+                $customSection.removeClass('hidden');
+                updatePriceFields();
+            } else {
+                $fixedSection.removeClass('hidden');
+                $customSection.addClass('hidden');
+            }
+        }
+
+        function updatePriceFields() {
+            const sizeTypes = $('#sizeType').val() || [];
+            const priceChange = $('#priceChange').val();
+
+            if (priceChange !== 'Yes') return;
+
+            const $adultField = $('#adultPriceField');
+            const $kidsField = $('#kidsPriceField');
+
+            // Hide both initially
+            $adultField.hide();
+            $kidsField.hide();
+
+            if (sizeTypes.includes('all')) {
+                $adultField.show();
+                $kidsField.show();
+            } else {
+                if (sizeTypes.includes('Adults')) {
+                    $adultField.show();
+                }
+                if (sizeTypes.includes('Kids')) {
+                    $kidsField.show();
+                }
+            }
+        }
+
+        function clearValidation(fieldId) {
+            // Clear error message span
+            $(`span[data-valmsg-for="${fieldId}"]`).text('').hide();
+
+            // Remove validation error class
+            $(`[name="${fieldId}"]`).removeClass('is-invalid');
+        }
+
+        function generateAutoStyleNames() {
+            const categoryName = $('#categoryName').val() || 'Product';
+            const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
+            const styleNames = [];
+
+            for (let i = 1; i <= numberOfStyles; i++) {
+                const paddedNumber = i.toString().padStart(2, '0');
+                styleNames.push(`${categoryName}${paddedNumber}`);
+            }
+
+            return styleNames;
+        }
+
+        function previewData() {
+            const data = collectFormData();
+            $('#previewData').text(JSON.stringify(data, null, 2));
+            $('#previewSection').removeClass('hidden');
+        }
+    </script>
+    <script>
+        function isNumberAndDecimal(evt, element) {
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            var value = element.value;
+            var dotContains = value.indexOf('.') !== -1;
+            if (dotContains && charCode == 46) {
+                return false;
+            }
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode != 46) {
+                return false;
+            }
+            return true;
+        }
+        function Whitespace(event) {
+            var key = event.keyCode || event.which;
+            var inputElement = event.target;
+            var inputValue = inputElement.value;
+            var cursorPosition = inputElement.selectionStart;
+            var inputChar = String.fromCharCode(key);
+
+            // Updated allowed pattern to include single quotes and allow spaces except at the start
+            var pattern = /^[a-zA-Z0-9\'\"\s]*$/;
+
+            // Allow control characters like backspace and delete
+            if (key === 8 || key === 46) {
+                return true;
+            }
+
+            // Handle the space character
+            if (key === 32) {
+                // Prevent leading spaces
+                if (cursorPosition === 0 || /\s/.test(inputValue[cursorPosition - 1])) {
+                    event.preventDefault();
+                    return false;
+                }
+            }
+
+            // Prevent multiple consecutive spaces
+            if (/(\s\s)/.test(inputChar)) {
+                event.preventDefault();
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+    <script>
+        window.onload = function () {
+            var downloadFile = '@ViewBag.DownloadFile';
+            if (downloadFile && downloadFile.trim() !== "") {
+                var downloadUrl = '@Url.Action("DownloadTemplate", "ListingForm")' + '?fileName=' + downloadFile;
+                window.location.href = downloadUrl;
+            }
+        };
+    </script>
+}

@@ -1,0 +1,196 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
+using webWarehouseInventoryManagement.DataAccess.Data;
+using webWarehouseInventoryManagement.Models;
+
+namespace webWarehouseInventoryManagement.Controllers
+{
+    public class ListingFormController : Controller
+    {
+        private readonly IListingFormService _services;
+        public ListingFormController(IListingFormService services) { 
+
+            _services = services;
+        }
+        public IActionResult Index(string id)
+        {
+            ListingFormModel listingFormModel = new ListingFormModel();
+            if (!string.IsNullOrEmpty(id))
+            {
+                listingFormModel = _services.GetTemplateDetails(id).GetAwaiter().GetResult();
+                ViewBag.Title = $"Edit Template | {listingFormModel.CategoryName}";
+            }
+            else
+            {
+                ViewBag.Title = "Generate Template";
+            }
+            listingFormModel.Colors = _services.GetColors().GetAwaiter().GetResult().ToList();
+            listingFormModel.Countrys = _services.GetCountryOfOrigin().GetAwaiter().GetResult().ToList(); 
+
+            listingFormModel.DesignTypes = _services.GetDesignType().GetAwaiter().GetResult().ToList();
+
+            // Country of Origin - set selected value
+            if (listingFormModel.idCountryOfOrigin != Guid.Empty)
+                listingFormModel.CountryOfOrigin = listingFormModel.idCountryOfOrigin.ToString();
+
+            var selectedDesign = listingFormModel.DesignTypes
+                        .FirstOrDefault(d => d.DesignType.ToString() == listingFormModel.DesignType);
+
+            if (selectedDesign != null)
+                listingFormModel.DesignType = selectedDesign.idListingDesignType.ToString();
+
+            // Sizes
+            var sizeCategories = _services.GetSizeCategories().GetAwaiter().GetResult();
+
+            // Load Adults and Kids sizes separately
+            var adultCategory = sizeCategories.FirstOrDefault(x => x.SizeCategory == "Adults");
+            var kidsCategory = sizeCategories.FirstOrDefault(x => x.SizeCategory == "Kids");
+
+            var adultSizes = adultCategory != null ? _services.GetSizes(adultCategory.idSizeCategory).GetAwaiter().GetResult(): new List<SizeModel>();
+            var kidsSizes = kidsCategory != null ? _services.GetSizes(kidsCategory.idSizeCategory).GetAwaiter().GetResult() : new List<SizeModel>();
+
+            ViewBag.AdultSizes = adultSizes;
+            ViewBag.KidsSizes = kidsSizes;
+
+            // Pass TempData to ViewBag so Razor can use it
+            //ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            //ViewBag.ErrorMessage = TempData["ErrorMessage"];
+            //ViewBag.DownloadFile = TempData["DownloadFile"];
+
+            return View(listingFormModel);
+        }
+        [HttpPost]
+        public IActionResult Index(ListingFormModel listingFormModel)
+        {
+            string message = string.Empty;
+            try
+            {
+                listingFormModel.Colors = _services.GetColors().GetAwaiter().GetResult().ToList();
+                listingFormModel.Countrys = _services.GetCountryOfOrigin().GetAwaiter().GetResult().ToList();
+                listingFormModel.DesignTypes = _services.GetDesignType().GetAwaiter().GetResult().ToList();
+
+                // Sizes
+                var sizeCategories = _services.GetSizeCategories().GetAwaiter().GetResult();
+
+                // Load Adults and Kids sizes separately
+                var adultCategory = sizeCategories.FirstOrDefault(x => x.SizeCategory == "Adults");
+                var kidsCategory = sizeCategories.FirstOrDefault(x => x.SizeCategory == "Kids");
+
+                var adultSizes = adultCategory != null ? _services.GetSizes(adultCategory.idSizeCategory).GetAwaiter().GetResult() : new List<SizeModel>();
+                var kidsSizes = kidsCategory != null ? _services.GetSizes(kidsCategory.idSizeCategory).GetAwaiter().GetResult() : new List<SizeModel>();
+
+                ViewBag.AdultSizes = adultSizes;
+                ViewBag.KidsSizes = kidsSizes;
+
+                if (listingFormModel.idListingProduct != Guid.Empty)
+                {
+                    message = "Listing Form updated successfully and generated the template file";
+                }
+                else
+                {
+                    message = "Listing Form added successfully and generated the template file";
+                }
+
+                var response = _services.AddProduct(listingFormModel).GetAwaiter().GetResult();
+
+                if (response.IsError)
+                {
+                    ViewBag.ErrorMessage = response.Message;
+                    return View(listingFormModel);
+                }
+
+                //string fileName = _services.ReadListingProductFile();
+                response = _services.ReadListingProductFile(listingFormModel).GetAwaiter().GetResult();
+
+                if (response.IsError)
+                {
+                    ViewBag.ErrorMessage = response.Message;
+                    return View(listingFormModel);
+                }
+
+                // Map ListingProduct to template file
+                string templateKeyword = listingFormModel.ListingProduct?.ToLower() switch
+                {
+                    "tshirt" => "TShirt",
+                    "hoodie" => "Hoodie",
+                    "polo" => "Polo",
+                    "sweatshirt" => "Sweatshirt",
+                    _ => throw new ArgumentException($"Unknown product type: {listingFormModel.ListingProduct}")
+                };
+
+                // Template file
+                string templateFile = $"{templateKeyword}Template.xlsm";
+
+                // Export file name (CategoryName + template keyword)
+                string exportFileName = $"{listingFormModel.CategoryName}_Template.xlsm";
+
+                // Remove special characters except underscore (_) and dot (.) and space            
+                string sanitizedFileName = Regex.Replace(exportFileName, @"[^a-zA-Z0-9_ .]+", "");
+
+                // here check path of return response filename
+                // Full path 
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    ViewBag.ErrorMessage = "Template file not found!";
+                    return View(listingFormModel);
+                }
+
+                var fileBytes = System.IO.File.ReadAllBytes(filePath);
+
+                //TempData["SuccessMessage"] = "Listing Form added successfully and generated the template file";
+                TempData["SuccessMessage"] = message;
+
+                TempData["DownloadFile"] = sanitizedFileName;
+
+                // Redirect to GET (avoid form resubmission and clear the model)
+                //return RedirectToAction("Index");
+                return RedirectToAction("ListingFormListPage");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                return View(listingFormModel);
+            }
+        }
+        // New Action for downloading file
+        public IActionResult DownloadTemplate(string fileName)
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("File not found.");
+            }
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        fileName);
+        }
+
+        //
+        [HttpGet]
+        public IActionResult ListingFormListPage()
+        {
+            if(TempData["SuccessMessage"] != null)
+            {
+                ViewBag.SuccessMessage = TempData["SuccessMessage"];
+                ViewBag.DownloadFile = TempData["DownloadFile"];
+                TempData["SuccessMessage"] = null;
+                TempData["DownloadFile"] = null;
+            }
+           
+            return View();
+        }
+
+        // Listings Template List
+        [HttpGet]
+        public async Task<JsonResult> GetListingTemplateList()
+        {
+            var result = await _services.GetListingTemplateList();
+            
+            return Json(result);
+        }
+    }
+}

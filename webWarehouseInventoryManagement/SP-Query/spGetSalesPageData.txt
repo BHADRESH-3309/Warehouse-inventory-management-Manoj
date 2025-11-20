@@ -1,0 +1,63 @@
+﻿SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		AEScope
+-- Create date: 13-Jan-2024
+-- Description:	Get Velocity data of product
+-- =============================================
+CREATE PROCEDURE spGetSalesPageData
+
+@productSource NVARCHAR(50) = 'All'
+
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+	SELECT p.idProduct, p.WarehouseSKU, p.WarehouseQty, p.ImagePath, p.ProductTitle, p.ProductSource, 
+  p.DateAdd, 
+  (
+    (wd._7DaysUnitSales / 7.00) * w.[7Days]
+  ) + (
+    (wd._30DaysUnitSales / 30.00) * w.[30Days]
+  ) + (
+    (wd._60DaysUnitSales / 60.00) * w.[60Days]
+  ) + (
+    (wd._90DaysUnitSales / 90.00) * w.[90Days]
+  ) AS Velocity, 
+  wd._7DaysUnitSales AS Day7, wd._30DaysUnitSales AS Day30, wd._60DaysUnitSales AS Day60, wd._90DaysUnitSales AS Day90 
+FROM tblProduct p 
+  LEFT JOIN tblWeight w ON p.idProduct = w.idProduct 
+  LEFT JOIN (
+    SELECT 
+      p.WarehouseSKU, 
+      COALESCE(
+        SUM(CASE WHEN sd.UpdatedDatetime >= DATEADD(DAY, -7, CONVERT(datetime, GETDATE()))  THEN sd.QtyShipped ELSE 0 END), 
+        0
+      ) AS _7DaysUnitSales, 
+      COALESCE(
+        SUM(CASE WHEN sd.UpdatedDatetime >= DATEADD(DAY, -30, CONVERT(datetime, GETDATE()))  THEN sd.QtyShipped ELSE 0 END), 
+        0
+      ) AS _30DaysUnitSales, 
+      COALESCE(
+        SUM(CASE WHEN sd.UpdatedDatetime >= DATEADD(DAY, -60, CONVERT(datetime, GETDATE()))  THEN sd.QtyShipped ELSE 0 END),
+        0
+      ) AS _60DaysUnitSales, 
+      COALESCE(
+        SUM(CASE WHEN sd.UpdatedDatetime >= DATEADD(DAY, -90, CONVERT(datetime, GETDATE()))  THEN sd.QtyShipped ELSE 0 END),
+        0
+      ) AS _90DaysUnitSales 
+    FROM 
+      (SELECT DISTINCT WarehouseSKU FROM tblProduct) p 
+      LEFT JOIN tblSKU s ON s.WarehouseSKU = p.WarehouseSKU 
+      LEFT JOIN tblMappingSKU m ON m.idSKU = s.idSKU 
+      LEFT JOIN tblOrderAndShipmentDetail sd ON sd.SellerSKU = m.SKU 
+    GROUP BY 
+      p.WarehouseSKU
+  ) wd ON p.WarehouseSKU = wd.WarehouseSKU
+   WHERE 
+		(@productSource = 'All' OR p.ProductSource = @productSource)
+
+END

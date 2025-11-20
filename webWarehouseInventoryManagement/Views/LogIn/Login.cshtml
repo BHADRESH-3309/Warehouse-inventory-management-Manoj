@@ -1,0 +1,129 @@
+﻿@model webWarehouseInventoryManagement.DataAccess.Models.UserModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Need to Add-->
+    <link rel="icon" type="image/png" href="~/img/analytics-monitor.png>
+
+    <link rel="stylesheet" type="text/css" href="css\LoginCss\css\bootstrap.min.css">
+
+    <link rel="stylesheet" type="text/css" href="css\LoginCss\css\font-awesome.min.css">
+
+    <link rel="stylesheet" type="text/css" href="css\LoginCss\css\material-design-iconic-font.min.css">
+
+    <link rel="stylesheet" type="text/css" href="css\LoginCss\css\util.css">
+    <link rel="stylesheet" type="text/css" href="css\LoginCss\css\main.css">
+    <style>
+        .btn {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(90deg, #0700b8 0%, #00ff88 100%);
+            background-size: 100%;
+            border-radius: 100px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 1000ms ease;
+            box-shadow: 0 4px 6px -1px hsla(0, 0%, 0%, 0.1), 0 2px 4px -2px hsla(0, 0%, 0%, 0.1);
+        }
+
+
+        .five {
+            background: linear-gradient(to right, #3a47d5, #f53636, #00A8C5, #f53636);
+            background-size: 350% 100%;
+            transition: all .4s ease-in-out;
+        }
+
+            .five:hover {
+                background-position: 100% 0;
+            }
+
+        .btn:hover {
+            animation-name: flow;
+            animation-duration: 500ms;
+            animation-timing-function: linear;
+        }
+
+        @@keyframes flow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="limiter">
+        <div class="container-login100 " style="background-image:url('/img/bg-01.webp');">
+            <div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
+                <form class="login100-form validate-form" asp-action="Login">
+                    <span class="login100-form-title p-b-49">
+                        Login
+                    </span>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="wrap-input100 validate-input m-b-23" data-validate="Username is reqauired">
+                        <label asp-for="Name" class="label-input100">Username</label>
+                        <input asp-for="Name" class="input100" type="text" placeholder="Type your username">
+                        <span asp-validation-for="Name" class="focus-input100" data-symbol="&#xf206;"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Password is required">
+                        <label asp-for="PasswordHas" class="label-input100">Password</label>
+                        <input asp-for="PasswordHas" class="input100" type="password" placeholder="Type your password">
+                        <span asp-validation-for="PasswordHas" class="focus-input100" data-symbol="&#xf190;"></span>
+                    </div>
+
+                    <div class="txt1 text-center p-t-54 p-b-20">
+                        @if (@ViewBag.Error != null)
+                        {
+                            <span style="color:red">
+                                @ViewBag.Error
+                            </span>
+                        }
+                    </div>
+
+                    <div class="container-login100-form-btn">
+                        <div class="wrap-login100-form-btn">
+                            <div class="login100-form-bgbtn"></div>
+                            <button class="login100-form-btn">
+                                Login
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+               @*  <form asp-action="GoogleLogin">
+                    <div class="wrap-login100-form-btn" style="margin-top:30px">
+                        <button type="submit" class="btn five login100-form-btn"><i class="fa fa-google-plus"></i> &nbsp; Login</button>
+                    </div>
+                </form> *@
+            </div>
+        </div>
+    </div>
+    <script src="\css\LoginCss\js\jquery-3.2.1.min.js"></script>
+
+    <script src="\css\LoginCss\js\popper.js"></script>
+    <script src="\css\LoginCss\js\bootstrap.min.js"></script>
+
+    <script src="\css\LoginCss\js\main.js"></script>
+</body>
+</html>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

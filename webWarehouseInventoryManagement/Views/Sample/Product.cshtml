@@ -1,0 +1,361 @@
+﻿@{
+    ViewData["Title"] = "Add/Edit Catalogue Product";
+}
+
+
+<div class="card card-info">
+    <div class="card-header">
+        <h3 class="card-title">Add/Edit Product | Product Title</h3>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+
+            <div class="col-sm-6 col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productNameInput">Product Name:</label>
+                                    <input type="text" class="form-control" id="productNameInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="warehouseSkuInput">Warehouse SKU:</label>
+                                    <input type="text" class="form-control" id="warehouseSkuInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="mb-0">Description:</label>
+                            <textarea class="form-control" rows="3" placeholder="Enter description here ..."></textarea>
+                        </div>
+
+                        <div>
+                            <p class="text-center font-weight-bold mb-0 mt-3">Product Dimensions:</p>
+                            <hr style="width:100%;text-align:left;margin-left:0;margin-top:0">
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productWigthInput">Width (CM):</label>
+                                    <input type="text" class="form-control" id="productWidthInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productWeightInput">Product Weight (KG):</label>
+                                    <input type="text" class="form-control" id="productWeightInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productLengthInput">Length (CM):</label>
+                                    <input type="text" class="form-control" id="productLengthInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productBoxSizeInput">Box Size (CM):</label>
+                                    <input type="text" class="form-control" id="productBoxSizeInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productHeightInput">Height (CM):</label>
+                                    <input type="text" class="form-control" id="productHeightInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productBoxQtyInput">Box Quantity:</label>
+                                    <input type="text" class="form-control" id="productBoxQtyInput">
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <p class="text-center font-weight-bold mt-3 mb-0">Material Composition:</p>
+                            <input type="text" class="form-control" id="materialCompositionInput">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="varsanyBagInput">Varsany Bag:</label>
+                                    <input type="text" class="form-control" id="varsanyBagInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="mailingBagInput">Mailing Bag:</label>
+                                    <input type="text" class="form-control" id="mailingBagInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productColourInput">Product Colour:</label>
+                                    <input type="text" class="form-control" id="productColourInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productSizeInput">Product Size:</label>
+                                    <input type="text" class="form-control" id="productSizeInput">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+
+                        <div>
+                            <p class="text-center font-weight-bold mb-0">Cost</p>
+                            <hr style="width:100%;text-align:left;margin-left:0;margin-top:0">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="productCostInput">Product Cost:</label>
+                                    <input type="text" class="form-control" id="productCostInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="commisionInput">Commision (%):</label>
+                                    <input type="text" class="form-control" id="commisionInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="shippingCostInput">Shipping Cost f/CN:</label>
+                                    <input type="text" class="form-control" id="shippingCostInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="duttyInput">Duty (%):</label>
+                                    <input type="text" class="form-control" id="duttyInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="manufacturerInput">Manufacturer :</label>
+                                    <input type="text" class="form-control" id="manufacturerInput">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="vatInput">VAT (%):</label>
+                                    <input type="text" class="form-control" id="vatInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-center font-weight-bold mb-0 mt-3">Total Cost</p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="britishStirlingInput">British Stirling</label>
+                                    <input type="text" class="form-control" id="britishStirlingInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="chineseYuanInput">Chinese Yuan</label>
+                                    <input type="text" class="form-control" id="chineseYuanInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="usDollarInput">US Dollar</label>
+                                    <input type="text" class="form-control" id="usDollarInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="mb-0" for="eurosInput">Euros</label>
+                                    <input type="text" class="form-control" id="eurosInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mt-4">
+                                <div class="form-group">
+                                    <label class="mb-0" for="totalCostInput">Total Cost:</label>
+                                    <input type="text" class="form-control" id="totalCostInput">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-lg-4">
+                <div class="card h-100 px-4">
+                    <div class="card-body ">
+                        <div class="row">
+                            <div>
+                                <p class="text-center font-weight-bold mb-1">Product Image</p>
+
+                            </div>
+                            
+                            <form method="post" enctype="multipart/form-data" asp-controller="Sample" asp-action="Product">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                       <hr style="width:100%;text-align:left;margin-left:0;margin-top:0">
+                                        <div class="col-md-12">
+                                            <p class="text-uppercase text-muted mb-0 mt-4">Image format must be JPG, PNG.</p>
+                                            <div id="drop-zone">
+                                                <img id="preview-selected-image" src="" alt="">                                               
+                                                <p id="image-preview-text">Drop image or click to upload</p>
+                                                <input type="file" id="myfile" name="postedImage" hidden>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 py-2">
+                                            <p class="text-danger">* validation messages</p>
+                                        </div>
+                                        <div class="col-md-12 py-2">
+                                            <p class="text-danger" id="Delete" onclick="alert('Delete button clicked')"><i class="fa fa-trash"></i> Delete Attachment</p>
+                                        </div>
+                                        <div class="btn-group">
+                                            <div class="btn-group add-margin">
+                                                <button type="button" class="btn btn-default btn-flat">Cancel</button>
+                                            </div>
+                                            <div class="btn-group add-margin">
+                                                <button type="button" class="btn btn-info btn-flat">Edit Product</button>
+                                            </div>
+                                            <div class="btn-group add-margin">     
+                                                <input type="file" class="custom-file-input" accept=".jpg,.png" id="FileUpload">
+                                                <button type="submit" class="btn btn-success btn-flat" value="Save Product">Save Product</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>   
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+
+    .form-group {
+        margin-bottom: 5px;
+    }
+
+    .add-margin {
+        margin-right: 26px
+    }
+
+    #drop-zone {
+        max-width: 370px;
+        height: 370px;
+        border: 1px ridge #eee;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    img {
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+        display: none;
+    }
+
+    .vl {
+        border-left: 1px solid black;
+    }
+
+</style>
+
+@section Scripts{
+    <script>
+        const dropZone = document.querySelector('#drop-zone');
+        const inputElement = document.querySelector('#myfile');
+        const img = document.querySelector('#preview-selected-image');
+        let p = document.querySelector('#image-preview-text')
+
+        inputElement.addEventListener('change', function (e) {
+            const clickFile = this.files[0];
+            if (clickFile) {
+                img.style = "display:block;";
+                p.style = 'display: none';
+                const reader = new FileReader();
+                reader.readAsDataURL(clickFile);
+                reader.onloadend = function () {
+                    const result = reader.result;
+                    let src = this.result;
+                    img.src = src;
+                    img.alt = clickFile.name
+                }
+            }
+        })
+        dropZone.addEventListener('click', () => inputElement.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            img.style = "display:block;";
+            let file = e.dataTransfer.files[0];
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = function () {
+                e.preventDefault()
+                p.style = 'display: none';
+                let src = this.result;
+                img.src = src;
+                img.alt = file.name
+            }
+        });
+    </script>
+}
+
