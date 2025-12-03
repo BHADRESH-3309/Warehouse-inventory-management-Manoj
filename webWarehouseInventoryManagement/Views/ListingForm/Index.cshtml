@@ -106,12 +106,16 @@ else if (ViewBag.ErrorMessage != null)
 <div class="col-md-12">
     <div class="card card-primary">
         <div class="card-header">
-           @*  <h3 class="card-title">Listing Form</h3> *@
+            @*  <h3 class="card-title">Listing Form</h3> *@
             <h3 class="card-title">@ViewBag.Title</h3>
         </div>
         <div class="card-body">
-            <form asp-action="Index" asp-controller="ListingForm" method="post">
-                <input type="hidden"  asp-for="idListingProduct" />
+            <form id="listingForm"  asp-action="Index" asp-controller="ListingForm" method="post">
+                <input type="hidden" asp-for="idListingProduct" />
+                <input type="hidden" id="StringColour" value="@Model.StringColour" />
+                <input type="hidden" id="SelectedAdultSize" value="@Model.SelectedAdultSize" />
+                <input type="hidden" id="SelectedKidsSize" value="@Model.SelectedKidsSize" />
+                
                 <div class="row">
                     <div class="col-lg-3 marginClass">
                         <label asp-for="ListingProduct">Listing Product:</label>
@@ -133,7 +137,10 @@ else if (ViewBag.ErrorMessage != null)
                     </div>
                     <div class="col-lg-3 marginClass">
                         <label asp-for="Colour">Colours:</label>
-                        <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" asp-items="@(new SelectList(Model.Colors, "idColor", "Color"))" multiple="multiple" autocomplete="off">
+                        @* <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" asp-items="@(new SelectList(Model.Colors, "idColor", "Color"))" multiple="multiple" autocomplete="off">
+                            <option value="all">All</option>
+                        </select> *@
+                        <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" multiple="multiple" autocomplete="off">
                             <option value="all">All</option>
                         </select>
                         <span asp-validation-for="Colour" class="text-danger"></span>
@@ -156,7 +163,7 @@ else if (ViewBag.ErrorMessage != null)
                     <div id="adultSizesSection" class="col-lg-6 size-group marginClass hidden">
                         <label asp-for="AdultSize">Adult Sizes</label>
                         <div class="col-lg-12 d-flex" style="padding:0px !important;">
-                            <select class="form-select js-brand-multiselect" id="adultSizes" asp-for="AdultSize" multiple="multiple" style="width:350px !important;" autocomplete="off">
+                            @* <select class="form-select js-brand-multiselect" id="adultSizes" asp-for="AdultSize" multiple="multiple" style="width:350px !important;" autocomplete="off">
                                 <option value="all">All</option>
                                 @if (ViewBag.AdultSizes != null)
                                 {
@@ -165,6 +172,9 @@ else if (ViewBag.ErrorMessage != null)
                                         <option value="@size.SizeName">@size.SizeName</option>
                                     }
                                 }
+                            </select> *@
+                            <select class="form-select js-brand-multiselect" id="adultSizes" asp-for="AdultSize" multiple="multiple" style="width:350px !important;" autocomplete="off">
+                                @* <option value="all">All</option> *@
                             </select>
                         </div>
                         <span asp-validation-for="AdultSize" class="text-danger"></span>
@@ -174,7 +184,7 @@ else if (ViewBag.ErrorMessage != null)
                     <div id="kidsSizesSection" class="col-lg-6 size-group hidden">
                         <label asp-for="KidsSize">Kids Sizes</label>
                         <div class="col-lg-12 d-flex" style="padding:0px !important;">
-                            <select class="form-select js-brand-multiselect" asp-for="KidsSize" id="kidsSizes" multiple="multiple" style="width:350px !important;" autocomplete="off">
+                            @* <select class="form-select js-brand-multiselect" asp-for="KidsSize" id="kidsSizes" multiple="multiple" style="width:350px !important;" autocomplete="off">
                                 <option value="all">All</option>
                                 @if (ViewBag.KidsSizes != null)
                                 {
@@ -183,6 +193,9 @@ else if (ViewBag.ErrorMessage != null)
                                         <option value="@size.SizeName">@size.SizeName</option>
                                     }
                                 }
+                            </select> *@
+                            <select class="form-select js-brand-multiselect" id="kidsSizes" asp-for="KidsSize" multiple="multiple" style="width:350px !important;" autocomplete="off">
+                                @* <option value="all">All</option> *@
                             </select>
                         </div>
                         <span asp-validation-for="KidsSize" class="text-danger"></span>
@@ -252,11 +265,12 @@ else if (ViewBag.ErrorMessage != null)
                                     @for (int j = 0; j < style.ColorImages.Count; j++)
                                     {
                                         var colorImage = style.ColorImages[j];
+                                        <input type="hidden" id="SelectedKidsSize11" value="@colorImage.MainImage" />
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Style @(i + 1) - @colorImage.ColorName - Main Image URL</label>
                                             <input type="text"
                                                    name="StyleImages[@i].ColorImages[@j].MainImage"
-                                                   class="form-control main-image-field"
+                                                   class="test form-control main-image-field"
                                                    data-field-index="@i-@j"
                                                    placeholder="Enter main image URL for Style @(i + 1) - @colorImage.ColorName"
                                                    value="@colorImage.MainImage" />
@@ -266,14 +280,25 @@ else if (ViewBag.ErrorMessage != null)
                                         </div>
                                     }
 
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Style @(i + 1) - Other Image URL</label>
+                                    <div class="col-md-6 mb-3 other-image-field-adults">
+                                        <label class="form-label">Style @(i + 1) - Other(Adults) Image URL</label>
                                         <input type="text"
                                                name="StyleImages[@i].OtherImage"
-                                               class="form-control other-image-field"
+                                               class="form-control other-image-field other-image-adultsValue"
                                                data-field-index="@i"
                                                placeholder="Enter other image URL for Style @(i + 1)"
                                                value="@style.OtherImage" />
+                                        <span class="text-danger validation-span"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 other-image-field-kids">
+                                        <label class="form-label">Style @(i + 1) - Other(Kids) Image URL</label>
+                                        <input type="text"
+                                               name="StyleImages[@i].OtherImageKids"
+                                               class="form-control other-image-field other-image-kidsValue"
+                                               data-field-index="@i"
+                                               placeholder="Enter other image URL for Style @(i + 1)"
+                                               value="@style.OtherImageKids" />
                                         <span class="text-danger validation-span"></span>
                                     </div>
                                 </div>
@@ -291,7 +316,7 @@ else if (ViewBag.ErrorMessage != null)
                             {
                                 <div class="col-md-6 mb-4">
                                     <label asp-for="@Model.StyleNames[i]" class="form-label">Style Name @(i + 1)</label>
-                                    <input asp-for="@Model.StyleNames[i]" class="form-control" placeholder="Enter style name @(i+1)" />
+                                    <input asp-for="@Model.StyleNames[i]" class="form-control" placeholder="Enter style name @(i + 1)" />
                                     <span asp-validation-for="@Model.StyleNames[i]" class="text-danger"></span>
                                 </div>
                             }
@@ -366,7 +391,7 @@ else if (ViewBag.ErrorMessage != null)
                 </div>
 
                 <div class="col-md-12 d-flex justify-content-end" style="margin-top:20px">
-                    <button type="submit" id="btnSubmit" class="btn btn-success ml-4 btnSave">Save Product</button>
+                    <button type="submit" id="btnSubmit" class="btn btn-submit-cust btn-success ml-4 btnSave">Save Product</button>
                 </div>
             </form>
         </div>
@@ -388,7 +413,7 @@ else if (ViewBag.ErrorMessage != null)
         let selectedSizes = {};
         let selectedcolors = {};
         let formData = {};
-      
+
         $(document).ready(function () {
             initializeDropdowns();
             attachEventHandlers();
@@ -429,18 +454,28 @@ else if (ViewBag.ErrorMessage != null)
             });
 
         }
+        function   setDynamicSizeNameConcate(sizeVal){
+            if((sizeVal != '' || sizeVal != null) && sizeVal != 'all'){
+                $("#spnSizes").text(' ('+sizeVal+')');
+            }else{
+            $("#spnSizes").text(' (Adult)');
+            }
 
+        }
         function attachEventHandlers() {
             // Size Type handler with the complex logic
             $('#sizeType').on('change', function () {
                 handleSizeTypeChange();
+                setDynamicSizeNameConcate($(this).val());
+                //updateImageFields();
             });
+
 
             // Style option handler
             $('#styleOption').on('change', function () {
                 handleStyleOptionChange();
             });
-            
+
             // Price change handler
             $('#priceChange').on('change', function () {
                 handlePriceChangeOption();
@@ -453,6 +488,7 @@ else if (ViewBag.ErrorMessage != null)
 
             // Number of styles handler
             $('#numberOfStyles').on('change', function () {
+
                 updateImageFields();
                 updateStyleNameFields();
             });
@@ -489,6 +525,7 @@ else if (ViewBag.ErrorMessage != null)
         }
 
         function updateSizeSections(selectedValues) {
+            debugger
             const $row = $('.row.mt-4'); // your row container
 
             const $adultSection = $('#adultSizesSection');
@@ -502,21 +539,29 @@ else if (ViewBag.ErrorMessage != null)
             $('#adultSizes').val(null).trigger('change');
             $('#kidsSizes').val(null).trigger('change');
 
-
+            
             if (selectedValues.includes('all')) {
                 // Show both sections
                 $adultSection.removeClass('hidden');
                 $kidsSection.removeClass('hidden');
+                $(".other-image-field-adults").removeClass(('hidden'));
+                $(".other-image-field-kids").removeClass(('hidden'));
                 $row.addClass('mb-4');
             } else {
+                debugger
                 if (selectedValues.includes('Adults')) {
                     $adultSection.removeClass('hidden');
+                    $(".other-image-field-adults").removeClass(('hidden'));
+                    $(".other-image-field-kids").addClass(('hidden'));
                 }
                 if (selectedValues.includes('Kids')) {
                     $kidsSection.removeClass('hidden');
+                    $(".other-image-field-adults").addClass(('hidden'));
+                    $(".other-image-field-kids").removeClass(('hidden'));
                 }
                 $row.addClass('mb-4');
             }
+            
         }
 
         function attachSizeAllHandlers() {
@@ -538,7 +583,7 @@ else if (ViewBag.ErrorMessage != null)
                 if (selectedValues.length > 0) {
                     clearValidation("AdultSize");
                 }
-                
+
                 // If nothing is selected
                 if (selectedValues.length === 0) {
                     // Flag to handle for all selections
@@ -583,7 +628,7 @@ else if (ViewBag.ErrorMessage != null)
                     clearValidation("KidsSize");
                 }
 
-                // If nothing is selected, 
+                // If nothing is selected,
                 if (selectedValues.length === 0) {
                     // Flag to handle for all selections
                     state.eventCount = 0;
@@ -671,8 +716,11 @@ else if (ViewBag.ErrorMessage != null)
             selectedcolors = $dropdown.find("option:selected").map(function () {
                 return $(this).text();
             }).get().join(", ");
-
+            debugger
+            var valueC = $("#StringColour").val();
+                        if ((valueC && valueC.trim() == "") || $("#idListingProduct").val() === '00000000-0000-0000-0000-000000000000') {
             updateImageFields();
+                        }
         }
 
         function updateStyleNameFields() {
@@ -705,83 +753,7 @@ else if (ViewBag.ErrorMessage != null)
             }
         }
 
-        // $('form').on('submit', function (e) {
-        //     let hasErrors = false;
 
-        //     // Clear previous errors
-        //     $('.field-validation-error').text('').removeClass('field-validation-error');
-
-        //     // Validate style name fields
-        //     $('.style-name-field').each(function () {
-        //         const $field = $(this);
-        //         if (!$field.val().trim()) {
-        //             hasErrors = true;
-        //             const fieldIndex = $field.data('field-index');
-
-        //             // Find the corresponding validation span
-        //             const fieldName = $field.attr('name');
-        //             const $validationSpan = $(`span[data-valmsg-for='${fieldName}']`);
-
-        //             $validationSpan.addClass('field-validation-error text-danger');
-        //             $validationSpan.text(`Please enter the style name ${fieldIndex + 1}`);
-        //         }
-        //     });
-
-        //     $('.main-image-field').each(function () {
-        //         const $field = $(this);
-        //         if (!$field.val().trim()) {
-        //             hasErrors = true;
-
-        //             // Extract style number and color from input name
-        //             const styleIndexMatch = $field.attr('name').match(/StyleImages\[(\d+)\]/);
-        //             const colorMatch = $field.attr('name').match(/ColorImages\[\d+\]\.MainImage/);
-
-        //             const styleNumber = styleIndexMatch ? parseInt(styleIndexMatch[1]) + 1 : $field.data('field-index') + 1;
-        //             // Get the color label from the associated <label>
-        //             const colorName = $field.prev('label').text().split(' - ')[1] || '';
-
-        //             $field.siblings('.validation-span').text(`Please enter the main image URL for Style ${styleNumber} - ${colorName}`);
-        //         }
-        //     });
-
-        //     $('.other-image-field').each(function () {
-        //         const $field = $(this);
-        //         if (!$field.val().trim()) {
-        //             hasErrors = true;
-
-        //             const styleIndexMatch = $field.attr('name').match(/StyleImages\[(\d+)\]/);
-        //             const styleNumber = styleIndexMatch ? parseInt(styleIndexMatch[1]) + 1 : $field.data('field-index') + 1;
-
-        //             $field.siblings('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
-        //         }
-        //     });
-        //     if (hasErrors) {
-        //         e.preventDefault();
-        //         $('.field-validation-error').first().focus();
-        //     }
-
-        //     // // Main Image
-        //     // $('.main-image-field').each(function () {
-        //     //     const $field = $(this);
-        //     //     if (!$field.val().trim()) {
-        //     //         hasErrors = true;
-        //     //         $field.siblings('.validation-span').text(`Please enter the main image URL for style ${$field.data('field-index')}`);
-        //     //     }
-        //     // });
-
-        //     // // Other Image
-        //     // $('.other-image-field').each(function () {
-        //     //     const $field = $(this);
-        //     //     if (!$field.val().trim()) {
-        //     //         hasErrors = true;
-        //     //         $field.siblings('.validation-span').text(`Please enter the other image URL for style ${$field.data('field-index')}`);
-        //     //     }
-        //     // });
-        //     // if (hasErrors) {
-        //     //     e.preventDefault();
-        //     //     $('.validation-span:visible').first().prev('input').focus();
-        //     // }
-        // });
 
         $('form').on('submit', function (e) {
             let hasErrors = false;
@@ -826,9 +798,11 @@ else if (ViewBag.ErrorMessage != null)
                     hasErrors = true;
                     const $container = $field.closest('.col-md-6');
                     const labelText = $container.find('label').text();
+                    const selectedSize = labelText.includes("(Kids)") ? "(Kids)" : "(Adults)";
                     const match = labelText.match(/Style (\d+) -/);
                     const styleNumber = match ? match[1] : '?';
-                    $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+                    // $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+                    $container.find('.validation-span').text('Please enter the other' + selectedSize + ' image URL for Style ' + styleNumber);
                 }
             });
 
@@ -869,7 +843,12 @@ else if (ViewBag.ErrorMessage != null)
             if (colorOptions.length === 0) {
                 return;
             }
+            let selectedSize = $('#sizeType').val();
 
+
+            if (!selectedSize) {
+                selectedSize = "Adults";
+            }
             for (let i = 0; i < numberOfStyles; i++) {
                 let row = '<div class="row mb-3">';
 
@@ -895,16 +874,54 @@ else if (ViewBag.ErrorMessage != null)
                         </div>`;
                 });
 
-                // Add "Other Image URL" for the style
-                row += `
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Style ${i + 1} - Other Image URL</label>
-                        <input type="text" name="StyleImages[${i}].OtherImage"
-                               class="form-control other-image-field"
-                               placeholder="Enter other image URL for Style ${i + 1}"
-                               data-field-index="${i}" />
-                        <span class="text-danger validation-span"></span>
-                    </div>`;
+                // // Add "Other Image URL" for the style
+                // row += `
+                //     <div class="col-md-6 mb-3">
+                //         <label class="form-label other-images-label">Style ${i + 1} - Other<span id="spnSizes"></span> Image URL</label>
+                //         <input type="text" name="StyleImages[${i}].OtherImage"
+                //                class="form-control other-image-field"
+                //                placeholder="Enter other image URL for Style ${i + 1}"
+                //                data-field-index="${i}" />
+                //         <span class="text-danger validation-span"></span>
+                //     </div>`;
+                // debugger
+                // if (selectedSize === "all") {
+
+            // Adult
+            row += `
+                <div class="col-md-6 mb-3 other-image-field-adults">
+                    <label class="form-label other-images-label">Style ${i + 1} - Other (Adults) Image URL</label>
+                    <input type="text" name="StyleImages[${i}].OtherImage"
+                           class="form-control other-image-field other-image-adultsValue"
+                           placeholder="Enter other image URL for Style ${i + 1} - Adult"
+                           data-field-index="${i}-adult" />
+                    <span class="text-danger validation-span"></span>
+                </div>`;
+
+            // Kids
+            row += `
+                <div class="col-md-6 mb-3 other-image-field-kids">
+                    <label class="form-label other-images-label">Style ${i + 1} - Other (Kids) Image URL</label>
+                    <input type="text" name="StyleImages[${i}].OtherImageKids"
+                           class="form-control other-image-field other-image-kidsValue"
+                           placeholder="Enter other image URL for Style ${i + 1} - Kids"
+                           data-field-index="${i}-kids" />
+                    <span class="text-danger validation-span"></span>
+                </div>`;
+
+        // } else  {
+
+        //     row += `
+        //         <div class="col-md-6 mb-3 other-image-field-adults">
+        //             <label class="form-label other-images-label">Style ${i + 1} - Other (${selectedSize}) Image URL</label>
+        //             <input type="text" name="StyleImages[${i}].OtherImage"
+        //                    class="form-control other-image-field"
+        //                    placeholder="Enter other image URL for Style ${i + 1}"
+        //                    data-field-index="${i}" />
+        //             <span class="text-danger validation-span"></span>
+        //         </div>`;
+        // }
+
 
                 row += '</div>';
                 $container.append(row);
@@ -912,277 +929,11 @@ else if (ViewBag.ErrorMessage != null)
 
             // Re-parse unobtrusive validation
             $.validator.unobtrusive.parse($container);
+
+          
         }
 
-        // function updateImageFields() {
-        //     const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
 
-        //     const $container = $('#imageFieldsSection');
-
-        //     let colorOptions = $('#colours option:selected').map(function () {
-        //         return { id: $(this).val(), name: $(this).text() };
-        //     }).get();
-
-        //     // Replace 'all' if selected
-        //     if (colorOptions.some(c => c.id === 'all')) {
-        //         colorOptions = $('#colours option').map(function () {
-        //             return { id: $(this).val(), name: $(this).text() };
-        //         }).get().filter(c => c.id !== 'all');
-        //     }
-
-        //     $container.empty();
-
-        //     for (let i = 0; i < numberOfStyles; i++) {
-        //         const totalColors = colorOptions.length;
-        //         if (totalColors === 0) continue;
-
-        //         // ========================
-        //         // Row 1
-        //         // ========================
-        //         let row1 = '<div class="row mb-3">';
-
-        //         if (totalColors === 1) {
-        //             row1 += `
-        //                 <div class="col-md-6 mb-3">
-        //                     <label class="form-label">Style ${i + 1} - ${colorOptions[0].name} - Main Image URL</label>
-        //                     <input type="text" name="StyleImages[${i}].ColorImages[0].MainImage"
-        //                            class="form-control main-image-field"
-        //                            placeholder="Enter main image URL for Style ${i + 1} - ${colorOptions[0].name}"
-        //                            data-field-index="${i}" />
-        //                     <span class="text-danger validation-span"></span>
-        //                 </div>
-        //                 <div class="col-md-6 mb-3">
-        //                     <label class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                     <input type="text" name="StyleImages[${i}].OtherImage"
-        //                            class="form-control other-image-field"
-        //                            placeholder="Enter other image URL for Style ${i + 1}"
-        //                            data-field-index="${i}" />
-        //                     <span class="text-danger validation-span"></span>
-        //                 </div>`;
-        //         } else {
-        //             // first row = first 2 main images
-        //             for (let j = 0; j < Math.min(2, totalColors); j++) {
-        //                 const color = colorOptions[j];
-        //                 row1 += `
-        //                     <div class="col-md-6 mb-3">
-        //                         <label class="form-label">Style ${i + 1} - ${color.name} - Main Image URL</label>
-        //                         <input type="text" name="StyleImages[${i}].ColorImages[${j}].MainImage"
-        //                                class="form-control main-image-field"
-        //                                placeholder="Enter main image URL for Style ${i + 1} - ${color.name}"
-        //                                data-field-index="${i}-${j}" />
-        //                         <span class="text-danger validation-span"></span>
-        //                     </div>`;
-        //             }
-        //         }
-
-        //         row1 += '</div>';
-        //         $container.append(row1);
-
-        //         // ========================
-        //         // Row 2: for 2 or more colors
-        //         // ========================
-        //         if (totalColors >= 2) {
-        //             let row2 = '<div class="row mb-4">';
-
-        //             if (totalColors === 2) {
-        //                 row2 += `
-        //                     <div class="col-md-6 mb-3">
-        //                         <label class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                         <input type="text" name="StyleImages[${i}].OtherImage"
-        //                                class="form-control other-image-field"
-        //                                placeholder="Enter other image URL for Style ${i + 1}"
-        //                                data-field-index="${i}" />
-        //                         <span class="text-danger validation-span"></span>
-        //                     </div>
-        //                     <div class="col-md-6 mb-3"></div>`;
-        //             } else if (totalColors === 3) {
-        //                 const remainingColor = colorOptions[2];
-        //                 row2 += `
-        //                     <div class="col-md-6 mb-3">
-        //                         <label class="form-label">Style ${i + 1} - ${remainingColor.name} - Main Image URL</label>
-        //                         <input type="text" name="StyleImages[${i}].ColorImages[2].MainImage"
-        //                                class="form-control main-image-field"
-        //                                placeholder="Enter main image URL for Style ${i + 1} - ${remainingColor.name}"
-        //                                data-field-index="${i}-2" />
-        //                         <span class="text-danger validation-span"></span>
-        //                     </div>
-        //                     <div class="col-md-6 mb-3">
-        //                         <label class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                         <input type="text" name="StyleImages[${i}].OtherImage"
-        //                                class="form-control other-image-field"
-        //                                placeholder="Enter other image URL for Style ${i + 1}"
-        //                                data-field-index="${i}" />
-        //                         <span class="text-danger validation-span"></span>
-        //                     </div>`;
-        //             }
-
-        //             row2 += '</div>';
-        //             $container.append(row2);
-        //         }
-        //     }
-
-        //     // ========================
-        //     // Enable unobtrusive validation for dynamically added inputs
-        //     // ========================
-        //     $.validator.unobtrusive.parse($container);
-        // }
-
-
-        // function updateImageFields() {
-        //     const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
-        //     const $container = $('#imageFieldsSection');
-
-        //     const colorOptions = $('#colours option:selected').map(function () {
-        //         return { id: $(this).val(), name: $(this).text() };
-        //     }).get();
-
-        //     $container.empty();
-
-        //     for (let i = 0; i < numberOfStyles; i++) {
-        //         const totalColors = colorOptions.length;
-        //         if (totalColors === 0) continue;
-
-        //         // ========================
-        //         // Row 1
-        //         // ========================
-        //         let row1 = `<div class="row mb-3">`;
-
-        //         if (totalColors === 1) {
-        //             // 1 color: Left = Main Image, Right = Other Image
-        //             row1 += `
-        //                         <div class="col-md-6 mb-3">
-        //                             <label class="form-label">Style ${i + 1} - ${colorOptions[0].name} - Main Image URL</label>
-        //                             <input type="text"
-        //                                    name="StyleImages[${i}].ColorImages[0].MainImage"
-        //                                    class="form-control main-image-field"
-        //                                    placeholder="Enter main image URL for Style ${i + 1} - ${colorOptions[0].name}"
-        //                                    data-val="true"
-        //                                    data-val-required="Main Image is required" />
-        //                         </div>
-        //                         <div class="col-md-6 mb-3">
-        //                             <label class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                             <input type="text"
-        //                                    name="StyleImages[${i}].OtherImage"
-        //                                    class="form-control other-image-field"
-        //                                    placeholder="Enter other image URL for Style ${i + 1}"
-        //                                    data-val="true"
-        //                                    data-val-required="Other Image is required" />
-        //                         </div>`;
-        //         } else {
-        //             // 2 or more colors: first row = first 2 main images
-        //             for (let j = 0; j < 2 && j < totalColors; j++) {
-        //                 const color = colorOptions[j];
-        //                 row1 += `
-        //                             <div class="col-md-6 mb-3">
-        //                                 <label class="form-label">Style ${i + 1} - ${color.name} - Main Image URL</label>
-        //                                 <input type="text"
-        //                                        name="StyleImages[${i}].ColorImages[${j}].MainImage"
-        //                                        class="form-control main-image-field"
-        //                                        placeholder="Enter main image URL for Style ${i + 1} - ${color.name}"
-        //                                        data-val="true"
-        //                                        data-val-required="Main Image is required" />
-        //                             </div>`;
-        //             }
-        //         }
-
-        //         row1 += `</div>`;
-        //         $container.append(row1);
-
-        //         // ========================
-        //         // Row 2: Only for 2 or more colors
-        //         // ========================
-        //         if (totalColors >= 2) {
-        //             let row2 = `<div class="row mb-4">`;
-
-        //             if (totalColors === 2) {
-        //                 // Left = Other Image, Right empty
-        //                 row2 += `
-        //                             <div class="col-md-6 mb-3">
-        //                                 <label class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                                 <input type="text"
-        //                                        name="StyleImages[${i}].OtherImage"
-        //                                        class="form-control other-image-field"
-        //                                        placeholder="Enter other image URL for Style ${i + 1}"
-        //                                        data-val="true"
-        //                                        data-val-required="Other Image is required" />
-        //                             </div>
-        //                             <div class="col-md-6 mb-3"></div>`;
-        //             } else if (totalColors === 3) {
-        //                 // Left = remaining Main Image, Right = Other Image
-        //                 const remainingColor = colorOptions[2];
-        //                 row2 += `
-        //                             <div class="col-md-6 mb-3">
-        //                                 <label class="form-label">Style ${i + 1} - ${remainingColor.name} - Main Image URL</label>
-        //                                 <input type="text"
-        //                                        name="StyleImages[${i}].ColorImages[2].MainImage"
-        //                                        class="form-control main-image-field"
-        //                                        placeholder="Enter main image URL for Style ${i + 1} - ${remainingColor.name}"
-        //                                        data-val="true"
-        //                                        data-val-required="Main Image is required" />
-        //                             </div>
-        //                             <div class="col-md-6 mb-3">
-        //                                 <label class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                                 <input type="text"
-        //                                        name="StyleImages[${i}].OtherImage"
-        //                                        class="form-control other-image-field"
-        //                                        placeholder="Enter other image URL for Style ${i + 1}"
-        //                                        data-val="true"
-        //                                        data-val-required="Other Image is required" />
-        //                             </div>`;
-        //             }
-
-        //             row2 += `</div>`;
-        //             $container.append(row2);
-        //         }
-        //     }
-
-        //     // ========================
-        //     // Enable unobtrusive validation for dynamically added inputs
-        //     // ========================
-        //     $.validator.unobtrusive.parse($container);
-
-        //     // Re-validate form immediately
-        //     const form = $container.closest('form');
-        //     form.validate();
-        // }
-
-
-        /// old code
-        // function updateImageFields() {
-        //     const numberOfStyles = parseInt($('#numberOfStyles').val()) || 1;
-        //     const $container = $('#imageFieldsSection');
-
-        //     $container.empty();
-
-        //     for (let i = 0; i < numberOfStyles; i++) {
-        //         const fieldHtml = `
-        //                     <div class="row">
-        //                         <div class="col-md-6 mb-4">
-        //                             <label for="StyleImages_${i}__MainImage" class="form-label">Style ${i + 1} - Main Image URL</label>
-        //                             <input type="text"  class="form-control main-image-field" id="StyleImages_${i}__MainImage"
-        //                                    name="StyleImages[${i}].MainImage" placeholder="Enter main image URL ${i + 1}"  data-field-index="${i}"
-        //                                    data-val="true" data-val-required="Please enter the main image URL ${i + 1}" onkeypress=" return Whitespace(event)">
-        //                             <span class="text-danger field-validation-valid"
-        //                                   data-valmsg-for="StyleImages[${i}].MainImage"
-        //                                   data-valmsg-replace="true"></span>
-        //                         </div>
-        //                         <div class="col-md-6 mb-4">
-        //                             <label for="StyleImages_${i}__OtherImage" class="form-label">Style ${i + 1} - Other Image URL</label>
-        //                             <input type="text" class="form-control other-image-field" id="StyleImages_${i}__OtherImage"
-        //                                    name="StyleImages[${i}].OtherImage" placeholder="Enter other image URL ${i + 1}"  data-field-index="${i}"
-        //                                    data-val="true" data-val-required="Please enter the other image URL ${i + 1}" onkeypress=" return Whitespace(event)">
-        //                             <span class="text-danger field-validation-valid"
-        //                                   data-valmsg-for="StyleImages[${i}].OtherImage"
-        //                                   data-valmsg-replace="true"></span>
-        //                         </div>
-        //                     </div>
-        //                 `;
-        //         $container.append(fieldHtml);
-        //     }
-
-        //     // re-parse validation for new fields
-        //     $.validator.unobtrusive.parse($container);
-        // }
 
         function handlePriceChangeOption() {
             const priceChange = $('#priceChange').val();
@@ -1306,5 +1057,200 @@ else if (ViewBag.ErrorMessage != null)
                 window.location.href = downloadUrl;
             }
         };
+    </script>
+    <script>
+        $(document).ready(function() {
+
+
+            setTimeout(function(){
+                
+
+            if($("#listingProduct").val())
+            {
+               $("#listingProduct").trigger("chosen:updated").trigger("change");
+               $("#sizeType").trigger("chosen:updated").trigger("change");
+
+
+
+            }},100);
+
+            //Fill Color
+            $('#listingProduct').change(function() {
+                $('#loaderNew').show();
+                $('#colours').val(null).trigger('change');
+                $('#colours').trigger('change');
+                $('#adultSizes').trigger('change');
+                $('#kidsSizes').trigger('change');
+
+                var productType = $(this).val();
+                if (!productType) {
+                    //$('#colours').html('<option value="all">--Select--</option>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("GetColors", "ListingForm")',  // Adjust controller name if needed
+                    type: 'GET',
+                    data: { productType: productType },
+                    success: function(response) {
+                        var options = '';//'<option value="all">All</option>';
+
+                        // Check if response.Result exists and is an array
+                        if (response && response.result && Array.isArray(response.result)) {
+                            options = '<option value="all">All</option>';
+                            $.each(response.result, function(index, color) {
+
+                                options += '<option value="' + color.idColor + '">' + color.color + '</option>';
+                            });
+                        } else {
+                            // If no colors returned, show a default option
+                            //options = '<option value="all">--No Colors Available--</option>';
+                        }
+
+                        $('#colours').html(options);
+                        $('#loaderNew').hide();
+                        var value = $("#StringColour").val();
+                        if (value && value.trim() !== "") {
+                            if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            {
+                                var selectedValues = value.split(',');
+                                $("#colours").val(selectedValues).trigger("change.select2");
+                                $('#colours').trigger('change');
+                                $("#StringColour").val('')
+                            }
+                        }
+
+                    },
+                    error: function() {
+                      // $('#colours').html('<option value="all">--Select--</option>');
+                      $('#loaderNew').hide();
+                    }
+                });
+            });
+
+            //Fill Size
+                 $('#colours').change(function() {
+                     $('#loaderNew').show();
+            var productType = $('#listingProduct').val();   // single select
+            var selectedColors = $(this).val();             // multi-select, array of colors
+
+            if (!productType) {
+                $('#adultSizes').html('<option value="all">--Select Product First--</option>');
+                $('#kidsSizes').html('<option value="all">--Select Product First--</option>');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetSizesByProductAndColors", "ListingForm")',
+                type: 'GET',
+                traditional: true,  // Important for sending arrays in query string
+                data: {
+                    productType: productType,
+                    colors: selectedColors   // this is an array
+                },
+                success: function(response) {
+                    $('#loaderNew').hide();
+                    $('#adultSizes').trigger('change');
+                    $('#kidsSizes').trigger('change');
+                    var adultOptions = '';//'<option value="all">All</option>';
+                    var kidsOptions =  '';//'<option value="all">All</option>';
+
+                    if (response && response.result && Array.isArray(response.result)) {
+                        // Loop through all sizes and split into adults and kids
+                        $.each(response.result, function(index, size) {
+                            if (size.sizeCategory === "Adults") {
+                                adultOptions += '<option value="' + size.sizeName + '">' + size.sizeName + '</option>';
+                            } else if (size.sizeCategory === "Kids") {
+                                kidsOptions += '<option value="' + size.sizeName + '">' + size.sizeName + '</option>';
+                            }
+                        });
+                    } else {
+                         // adultOptions = '<option value="all">--No Sizes Available--</option>';
+                         // kidsOptions = '<option value="all">--No Sizes Available--</option>';
+                    }
+
+
+                         if (adultOptions) {
+                            adultOptions = '<option value="all">All</option>' + adultOptions;
+                        }
+                        if (kidsOptions) {
+                            kidsOptions = '<option value="all">All</option>' + kidsOptions;
+                        }
+                    $('#adultSizes').html(adultOptions);
+                    $('#kidsSizes').html(kidsOptions);
+
+
+                    var sSelectedKidsSize = $("#SelectedKidsSize").val();
+                        if (sSelectedKidsSize && sSelectedKidsSize.trim() !== "") {
+                            if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            {
+                                var selectedValuesK = sSelectedKidsSize.split(',');
+                                $("#kidsSizes").val(selectedValuesK).trigger("change.select2");
+                            }
+                        }
+
+                        var aSelectedAdultSize = $("#SelectedAdultSize").val();
+                        if (aSelectedAdultSize && aSelectedAdultSize.trim() !== "") {
+                            if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            {
+                                var selectedValuesa = aSelectedAdultSize.split(',');
+                                $("#adultSizes").val(selectedValuesa).trigger("change.select2");
+                            }
+                        }
+
+
+                },
+                error: function() {
+                    $('#loaderNew').hide();
+                     // $('#adultSizes').html('<option value="all">--Select--</option>');
+                     // $('#kidsSizes').html('<option value="all">--Select--</option>');
+                }
+            });
+        });
+
+            });
+
+
+    </script>
+    <script>
+         
+             
+                  $(document).on("input", ".other-image-kidsValue", function () {
+                        if($('#sizeType').val() == "Kids"){
+                     let row = $(this).closest(".row");
+                     let adultsContainer = row.find(".other-image-field-adults");
+
+                     if (adultsContainer.hasClass("hidden"))
+                     {
+                         row.find(".other-image-adultsValue").val($(this).val());
+                     }
+                       }
+                 });
+             //}
+             
+                     $(document).on("input", ".other-image-adultsValue", function () {
+                           if($('#sizeType').val() == "Adults"){
+                      let row = $(this).closest(".row");
+                      let adultsContainer = row.find(".other-image-field-kids");
+
+                      if (adultsContainer.hasClass("hidden"))
+                      {
+                           row.find(".other-image-kidsValue").val($(this).val());
+                      }
+                          }
+                  });
+             
+         
+       $(".btn-submit-cust").click(function () {
+           var isValid = $("#listingForm").validate().form();
+
+        if (isValid) {
+              console.log("Form valid!");
+            $('#loaderNew').show();
+        } else {
+             console.log("Form has errors");
+            $('#loaderNew').hide();
+        }
+        })
     </script>
 }

@@ -17,6 +17,7 @@ namespace webWarehouseInventoryManagement.Models
         [Required(ErrorMessage = "Please select a colour")]
         //public string Colour { get; set; }
         public List<string> Colour { get; set; } = new();
+        public string StringColour { get; set; } = "";
 
         [Required(ErrorMessage = "Please select a sizes")]
          //public List<string> Size { get; set; } = new List<string>();
@@ -24,9 +25,11 @@ namespace webWarehouseInventoryManagement.Models
         [Required(ErrorMessage = "Please select a adult sizes")]
         //public string AdultSize { get; set; }
         public List<string> AdultSize { get; set; } = new();
+        public string SelectedAdultSize { get; set; } = null;
         [Required(ErrorMessage = "Please select a kids sizes")]
         //public string KidsSize { get; set; }
         public List<string> KidsSize { get; set; } = new();
+        public string SelectedKidsSize { get; set; } = null;
 
         [Required(ErrorMessage = "Please enter the category name")]
         [StringLength(100)]
@@ -83,6 +86,7 @@ namespace webWarehouseInventoryManagement.Models
         public List<StyleImage> StyleImages { get; set; } = new();
 
         public List<ColorModel> Colors { get; set; }
+      //  public string? hdnColors { get; set; }
         public List<CountryModel> Countrys { get; set; }
         public List<DesignTypeModel> DesignTypes { get; set; }
 
@@ -129,6 +133,7 @@ namespace webWarehouseInventoryManagement.Models
         public decimal SalePrice { get; set; }
         public string MainImageUrl { get; set; }
         public string OtherImageUrl { get; set; }
+        public string OtherImageKids { get; set; }
         public string ProductTextCode { get; set; }
         public string CountryOfOrigin { get; set; }
 
@@ -143,8 +148,9 @@ namespace webWarehouseInventoryManagement.Models
 
         public List<ColorImage> ColorImages { get; set; } = new();
 
-        [Required(ErrorMessage = "Please enter the other image URL")]
+        [Required(ErrorMessage = "Please enter the image URL")]
         public string OtherImage { get; set; }
+        public string OtherImageKids { get; set; }
         public int StyleNo { get; set; }
         public string StyleName { get; set; }
 
@@ -154,6 +160,7 @@ namespace webWarehouseInventoryManagement.Models
         [Required(ErrorMessage = "Please enter the main image URL")]
         public string MainImage { get; set; }
         public string OtherImage { get; set; }
+        public string OtherImageKids { get; set; }
         public string idColor { get; set; }   // optional, if you need to know which color
        
         public string ColorName { get; set; } // optional
@@ -263,6 +270,7 @@ namespace webWarehouseInventoryManagement.Models
         public string Color { get; set; }
         public string MainImageUrl { get; set; }
         public string OtherImageUrl { get; set; }
+        public string OtherImageKids { get; set; }
     }
     public class ListingStyleDto
     {

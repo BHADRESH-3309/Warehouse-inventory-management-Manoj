@@ -100,18 +100,20 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 // if Change Fixed Price: No then implementation of add direct prices of 
                 if (!string.IsNullOrEmpty(listingFormModel.PriceChange) && listingFormModel.PriceChange == "No")
                 {
+                    decimal DefaultPrices_Adults =  Convert.ToDecimal(_config["DefaultPrices:AdultPrice"]);
+                    decimal DefaultPrices_KidsPrice = Convert.ToDecimal(_config["DefaultPrices:KidsPrice"]);
                     if (listingFormModel.Size == "Kids")
                     {
-                        listingFormModel.KidsPrice = Convert.ToDecimal(12.99);
+                        listingFormModel.KidsPrice = DefaultPrices_KidsPrice;
                     }
                     else if (listingFormModel.Size == "Adults")
                     {
-                        listingFormModel.AdultPrice = Convert.ToDecimal(14.99);
+                        listingFormModel.AdultPrice = DefaultPrices_Adults;
                     }
                     else
                     {
-                        listingFormModel.KidsPrice = Convert.ToDecimal(12.99);
-                        listingFormModel.AdultPrice = Convert.ToDecimal(14.99);
+                        listingFormModel.KidsPrice = DefaultPrices_KidsPrice;
+                        listingFormModel.AdultPrice = DefaultPrices_Adults;
                     }
                 }
 
@@ -252,8 +254,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                     Guid imageId = Guid.NewGuid();
 
                                     string imageQuery = @"INSERT INTO tblListingImage (idListingImage, idListingProduct, idListingStyle, idColor,
-                                                        Color,MainImageUrl, OtherImageUrl)
-                                                       VALUES (@idListingImage, @idListingProduct, @idListingStyle,@idColor,@Color, @MainImageUrl, @OtherImageUrl)";
+                                                        Color,MainImageUrl, OtherImageUrl,OtherImageKids)
+                                                       VALUES (@idListingImage, @idListingProduct, @idListingStyle,@idColor,@Color, @MainImageUrl, @OtherImageUrl,@OtherImageKids)";
 
                                     await _sqlDataAccess.ExecuteDML(imageQuery, new
                                     {
@@ -263,7 +265,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                         idColor = colorImage.idColor,
                                         Color = colorImage.ColorName,
                                         MainImageUrl = colorImage.MainImage,
-                                        OtherImageUrl = image.OtherImage
+                                        OtherImageUrl = image.OtherImage,
+                                        OtherImageKids = (listingFormModel.Size.ToLower() == "adults")? null:image.OtherImageKids,
                                     });
                                 }
                             }
@@ -673,6 +676,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         // Find matching color image for this style/color
                         string mainImage = "";
                         string otherImage = styleImages.OtherImage ?? "";
+                        string otherImageKids = styleImages.OtherImageKids ?? "";
 
                         if (styleImages?.ColorImages != null)
                         {
@@ -682,6 +686,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                             if (colorImage != null)
                             {
+                                //otherImageKids = styleImages.OtherImageKids;
                                 mainImage = colorImage.MainImage ?? "";
                                 // Optional: override otherImage per color if needed
                                 // otherImage = colorImage.OtherImage ?? otherImage;
@@ -706,6 +711,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                 SizeCategory = sizeInfo.SizeCategory,
                                 MainImageUrl = mainImage,
                                 OtherImageUrl = otherImage,
+                                OtherImageKids = otherImageKids,
                                 CountryOfOrigin = listingFormModel.CountryName
                             };
 
@@ -858,7 +864,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     sheet.Cells[currentRow, columnMap["main_image_url"]].Value = child.MainImageUrl;
 
                     if(child.SizeCategory == "Kids")
-                        sheet.Cells[currentRow, columnMap["age_range_description"]].Value = "Kid";
+                        sheet.Cells[currentRow, columnMap["age_range_description"]].Value = "Kid";                        
                     else
                         sheet.Cells[currentRow, columnMap["age_range_description"]].Value = "Adult";
 
@@ -902,8 +908,20 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     else if (listingFormModel.ListingProduct == "Hoodie")
                         sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "Hoodie";
 
-                   
-                    sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
+                    if (listingFormModel.Size == "All") {
+                        sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
+                    }
+
+                    if (listingFormModel.Size == "all")
+                    {
+                        if (child.SizeCategory == "Kids")
+                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageKids;
+                        else
+                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
+                    }   
+                    else {
+                        sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
+                    }
 
                     sheet.Cells[currentRow, columnMap["parent_child"]].Value = "Child";
 
@@ -933,13 +951,25 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     sheet.Cells[currentRow, columnMap["condition_type"]].Value = _amazonSheetDefaults.ConditionType;
                     sheet.Cells[currentRow, columnMap["currency"]].Value = _amazonSheetDefaults.Currency;
 
-                    sheet.Cells[currentRow, columnMap["sale_price"]].Value = child.SalePrice;
-                    sheet.Cells[currentRow, columnMap["sale_from_date"]].Value = DateTime.Now;
-                    sheet.Cells[currentRow, columnMap["sale_from_date"]].Style.Numberformat.Format = "d/m/yyyy";
-                    sheet.Cells[currentRow, columnMap["sale_end_date"]].Value = "1/1/2040";
+                    //sheet.Cells[currentRow, columnMap["sale_price"]].Value = child.SalePrice;
+                    //sheet.Cells[currentRow, columnMap["sale_from_date"]].Value = DateTime.Now;
+                    //sheet.Cells[currentRow, columnMap["sale_from_date"]].Style.Numberformat.Format = "d/m/yyyy";
+                    //sheet.Cells[currentRow, columnMap["sale_end_date"]].Value = "1/1/2040";
 
+                    decimal DefaultPrices_Adults = Convert.ToDecimal(_config["DefaultPrices:AdultPrice"]);
+                    decimal DefaultPrices_KidsPrice = Convert.ToDecimal(_config["DefaultPrices:KidsPrice"]);
+                    decimal? DefaultPrices = null; ;
                     //fixed value used 
-                    sheet.Cells[currentRow, columnMap["uvp_list_price"]].Value = _amazonSheetDefaults.UVPListPrice;
+                    if (child.SizeCategory == "Kids") {
+                        DefaultPrices = DefaultPrices_KidsPrice;
+                    } else
+                    {
+                        DefaultPrices = DefaultPrices_Adults;
+                    }
+                        sheet.Cells[currentRow, columnMap["uvp_list_price"]].Value = DefaultPrices;
+                        sheet.Cells[currentRow, columnMap["standard_price"]].Value = DefaultPrices;
+                        sheet.Cells[currentRow, columnMap["list_price_with_tax"]].Value = DefaultPrices;
+                    
 
                     sheet.Cells[currentRow, columnMap["product_tax_code"]].Value = child.ProductTextCode;
 
@@ -1212,6 +1242,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                 // Store them as string (since your <select> uses string values)
                 product.Colour = colorIds.Select(c => c.ToString()).ToList();
+                if (product.Colour != null && product.Colour.Count > 0)
+                    product.StringColour = string.Join(",",colorIds.Select(c => c.ToString()).ToList());
             }
           
             // ---------- Styles ----------
@@ -1252,12 +1284,15 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 .Where(s => s.SizeCategory.Equals("Adults", StringComparison.OrdinalIgnoreCase))
                 .Select(s => s.SizeName)
                 .ToList();
-
+            if(product.AdultSize != null && product.AdultSize.Count > 0)
+                product.SelectedAdultSize =  string.Join(",", product.AdultSize);
             // Kids
             product.KidsSize = sizes
                 .Where(s => s.SizeCategory.Equals("Kids", StringComparison.OrdinalIgnoreCase))
                 .Select(s => s.SizeName)
                 .ToList();
+            if (product.KidsSize != null && product.KidsSize.Count > 0)
+                product.SelectedKidsSize = string.Join(",", product.KidsSize);
 
             // ---------- Images ----------
             //string queryImages = @"SELECT idListingImage, MainImageUrl as MainImage, OtherImageUrl as OtherImage, idListingStyle
@@ -1275,8 +1310,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
             // ---------- Fetch images ----------
             var images = await _sqlDataAccess.GetData<ListingImageDto, dynamic>(
-                @"SELECT idListingImage, idListingStyle, idColor, Color, MainImageUrl, OtherImageUrl
-                FROM tblListingImage WHERE idListingProduct = @idListingProduct",new { idListingProduct });
+                @"SELECT idListingImage, idListingStyle, idColor, Color, MainImageUrl, OtherImageUrl,OtherImageKids
+                FROM tblListingImage WHERE idListingProduct = @idListingProduct", new { idListingProduct });
 
             // ---------- Map Styles with Images ----------
             var styleImages = styles.Select(style =>
@@ -1294,11 +1329,17 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         idColor = img.idColor.ToString(),
                         ColorName = img.Color,
                         MainImage = img.MainImageUrl,
-                        OtherImage = img.OtherImageUrl
+                        OtherImage = img.OtherImageUrl,
+                        OtherImageKids = img.OtherImageKids
                     }).ToList(),
 
                     // This gives you one OtherImage per Style
-                    OtherImage = imagesForStyle.Select(img => img.OtherImageUrl).FirstOrDefault().ToString()
+
+                    OtherImage = imagesForStyle.FirstOrDefault()?.OtherImageUrl ?? "",
+
+                    OtherImageKids = product.Size.ToLower() == "adults"
+    ? (imagesForStyle.FirstOrDefault()?.OtherImageUrl ?? "")
+    : (imagesForStyle.FirstOrDefault()?.OtherImageKids ?? "")
                 };
             }).OrderBy(s => s.StyleNo).ToList();
 
@@ -1306,6 +1347,90 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
             return product;
         }
+        #endregion
+
+
+        #region Get Colors
+        public async Task<ResponseModel> GetColorsByProductType(string productType)
+        {
+            ResponseModel response = new ResponseModel();
+            string query = string.Empty;
+
+            try
+            {
+                query = @"
+            SELECT DISTINCT c.idColor, c.Color, c.ColorMap
+            FROM tblProductsInventory pin
+            INNER JOIN tblColor c ON pin.color = c.Color
+            WHERE pin.product_type = @ProductType
+            ORDER BY c.Color ASC";
+
+                // Assuming you have a ColorModel to map idColor, Color, ColorMap
+                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType });
+
+                response.IsError = false;
+                response.Result = data;
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                response.IsError = true;
+            }
+
+            return response;
+        }
+
+
+        #endregion
+
+        #region Return Size
+        public async Task<ResponseModel> GetSizesByProductAndColors(string productType, List<string> colorIds)
+        {
+            ResponseModel response = new ResponseModel();
+
+            try
+            {
+                // When "all" is passed → ignore color filter
+                bool ignoreColorFilter =
+                    colorIds != null &&
+                    colorIds.Count == 1 &&
+                    colorIds[0].Equals("all", StringComparison.OrdinalIgnoreCase);
+
+                string query = @"
+SELECT DISTINCT s.*, sc.SizeCategory
+FROM tblProductsInventory pin
+INNER JOIN tblSizeCategory sc ON pin.size_type = sc.SizeCategory
+INNER JOIN tblSizes s ON s.idSizeCategory = sc.idSizeCategory
+INNER JOIN tblColor c ON pin.color = c.Color
+WHERE pin.product_type = @ProductType
+  AND (@IgnoreColorFilter = 1 OR c.idColor IN @ColorIds)
+ORDER BY sc.SizeCategory ASC, s.idSize ASC;
+";
+
+                var parameters = new
+                {
+                    ProductType = productType,
+                    ColorIds = ignoreColorFilter ? new List<string>() : colorIds,
+                    IgnoreColorFilter = ignoreColorFilter ? 1 : 0
+                };
+
+                var data = await _sqlDataAccess.GetData<SizeModel, dynamic>(query, parameters);
+
+                response.IsError = false;
+                response.Result = data;
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.Message = ex.Message;
+            }
+
+            return response;
+        }
+
+
+
+
         #endregion
     }
 }

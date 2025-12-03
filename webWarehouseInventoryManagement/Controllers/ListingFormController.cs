@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 using System.Text.RegularExpressions;
 using webWarehouseInventoryManagement.DataAccess.Data;
 using webWarehouseInventoryManagement.Models;
@@ -25,6 +26,8 @@ namespace webWarehouseInventoryManagement.Controllers
                 ViewBag.Title = "Generate Template";
             }
             listingFormModel.Colors = _services.GetColors().GetAwaiter().GetResult().ToList();
+            //if(listingFormModel.color != null)
+                //listingFormModel.hdnColors = string.Join(",",listingFormModel.color.Select(x=>x.idColor));
             listingFormModel.Countrys = _services.GetCountryOfOrigin().GetAwaiter().GetResult().ToList(); 
 
             listingFormModel.DesignTypes = _services.GetDesignType().GetAwaiter().GetResult().ToList();
@@ -60,6 +63,7 @@ namespace webWarehouseInventoryManagement.Controllers
             return View(listingFormModel);
         }
         [HttpPost]
+        //[ValidateAntiForgeryToken]
         public IActionResult Index(ListingFormModel listingFormModel)
         {
             string message = string.Empty;
@@ -130,7 +134,7 @@ namespace webWarehouseInventoryManagement.Controllers
                 // here check path of return response filename
                 // Full path 
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);
-
+                
                 if (!System.IO.File.Exists(filePath))
                 {
                     ViewBag.ErrorMessage = "Template file not found!";
@@ -138,6 +142,28 @@ namespace webWarehouseInventoryManagement.Controllers
                 }
 
                 var fileBytes = System.IO.File.ReadAllBytes(filePath);
+
+                FileInfo fileInfo = new FileInfo(filePath);
+
+                #region Brand Name Replace in EXCEL
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using (var package = new ExcelPackage(fileInfo))
+                {
+                    var worksheet = package.Workbook.Worksheets["Template"];
+                    if (worksheet == null)
+                    {
+                        ViewBag.ErrorMessage = "Worksheet 'Template' not found!";
+                        return View(listingFormModel);
+                    }
+
+                    // ✅ UPDATE the values below Brand Name
+                    worksheet.Cells[2, 3].Value = "FULLY MERCHED";
+                    worksheet.Cells[3, 3].Value = "fully_merched";
+
+                    // Save
+                    package.Save();
+                }
+                #endregion
 
                 //TempData["SuccessMessage"] = "Listing Form added successfully and generated the template file";
                 TempData["SuccessMessage"] = message;
@@ -158,6 +184,7 @@ namespace webWarehouseInventoryManagement.Controllers
         public IActionResult DownloadTemplate(string fileName)
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);
+            
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound("File not found.");
@@ -190,6 +217,33 @@ namespace webWarehouseInventoryManagement.Controllers
         {
             var result = await _services.GetListingTemplateList();
             
+            return Json(result);
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetColors(string productType)
+        {
+            if (string.IsNullOrEmpty(productType))
+            {
+                return Json(new List<string>());
+            }
+            var result = await _services.GetColorsByProductType(productType);
+            
+            return Json(result);
+        }
+        [HttpGet]
+        public async Task<JsonResult> GetSizesByProductAndColors(string productType, List<string> colors)
+        {
+            // Validate inputs
+            if (string.IsNullOrEmpty(productType) || colors == null || colors.Count == 0)
+            {
+                return Json(new List<string>());
+            }
+
+            // Use productType and colors to query sizes
+            var result = await _services.GetSizesByProductAndColors(productType, colors);
+
             return Json(result);
         }
     }
