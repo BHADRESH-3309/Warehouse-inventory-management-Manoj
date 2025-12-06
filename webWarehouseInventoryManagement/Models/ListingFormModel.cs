@@ -118,7 +118,7 @@ namespace webWarehouseInventoryManagement.Models
         //public int SizeId { get; set; }
         public string StyleId { get; set; }
         public string MainImageUrl { get; set; }
-        public string OtherImageUrl { get; set; }
+        public string OtherImageUrlAdult { get; set; }
     }
 
     public class ChildSKUInfo
@@ -132,8 +132,8 @@ namespace webWarehouseInventoryManagement.Models
         public string SizeMap { get; set; }
         public decimal SalePrice { get; set; }
         public string MainImageUrl { get; set; }
-        public string OtherImageUrl { get; set; }
-        public string OtherImageKids { get; set; }
+        public string OtherImageUrlAdult { get; set; }
+        public string OtherImageUrlKids { get; set; }
         public string ProductTextCode { get; set; }
         public string CountryOfOrigin { get; set; }
 
@@ -148,9 +148,9 @@ namespace webWarehouseInventoryManagement.Models
 
         public List<ColorImage> ColorImages { get; set; } = new();
 
-        [Required(ErrorMessage = "Please enter the image URL")]
+        //[Required(ErrorMessage = "Please enter the image URL")]
         public string OtherImage { get; set; }
-        public string OtherImageKids { get; set; }
+        public string OtherImageUrlKids { get; set; }
         public int StyleNo { get; set; }
         public string StyleName { get; set; }
 
@@ -160,7 +160,7 @@ namespace webWarehouseInventoryManagement.Models
         [Required(ErrorMessage = "Please enter the main image URL")]
         public string MainImage { get; set; }
         public string OtherImage { get; set; }
-        public string OtherImageKids { get; set; }
+        public string OtherImageUrlKids { get; set; }
         public string idColor { get; set; }   // optional, if you need to know which color
        
         public string ColorName { get; set; } // optional
@@ -269,8 +269,8 @@ namespace webWarehouseInventoryManagement.Models
         public Guid idColor { get; set; }
         public string Color { get; set; }
         public string MainImageUrl { get; set; }
-        public string OtherImageUrl { get; set; }
-        public string OtherImageKids { get; set; }
+        public string OtherImageUrlAdult { get; set; }
+        public string OtherImageUrlKids { get; set; }
     }
     public class ListingStyleDto
     {

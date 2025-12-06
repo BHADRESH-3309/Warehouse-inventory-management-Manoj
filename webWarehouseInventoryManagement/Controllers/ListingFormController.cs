@@ -86,6 +86,14 @@ namespace webWarehouseInventoryManagement.Controllers
                 ViewBag.AdultSizes = adultSizes;
                 ViewBag.KidsSizes = kidsSizes;
 
+
+                if (listingFormModel.Colour != null && listingFormModel.Colour.Count > 0)
+                    listingFormModel.StringColour = string.Join(",", listingFormModel.Colour);
+                if (listingFormModel.AdultSize != null && listingFormModel.AdultSize.Count > 0)
+                    listingFormModel.SelectedAdultSize = string.Join(",", listingFormModel.AdultSize);
+                if (listingFormModel.KidsSize != null && listingFormModel.KidsSize.Count > 0)
+                    listingFormModel.SelectedKidsSize = string.Join(",", listingFormModel.KidsSize);
+
                 if (listingFormModel.idListingProduct != Guid.Empty)
                 {
                     message = "Listing Form updated successfully and generated the template file";
@@ -134,7 +142,7 @@ namespace webWarehouseInventoryManagement.Controllers
                 // here check path of return response filename
                 // Full path 
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);
-                
+                filePath = filePath.Replace("Warehouse-inventory-management-Manoj\\webWarehouseInventoryManagement\\wwwroot/ListingFiles", "Temp");
                 if (!System.IO.File.Exists(filePath))
                 {
                     ViewBag.ErrorMessage = "Template file not found!";
@@ -184,7 +192,7 @@ namespace webWarehouseInventoryManagement.Controllers
         public IActionResult DownloadTemplate(string fileName)
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);
-            
+            filePath = filePath.Replace("Warehouse-inventory-management-Manoj\\webWarehouseInventoryManagement\\wwwroot/ListingFiles", "Temp");
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound("File not found.");

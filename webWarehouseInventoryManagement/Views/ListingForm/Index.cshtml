@@ -294,11 +294,11 @@ else if (ViewBag.ErrorMessage != null)
                                     <div class="col-md-6 mb-3 other-image-field-kids">
                                         <label class="form-label">Style @(i + 1) - Other(Kids) Image URL</label>
                                         <input type="text"
-                                               name="StyleImages[@i].OtherImageKids"
+                                               name="StyleImages[@i].OtherImageUrlKids"
                                                class="form-control other-image-field other-image-kidsValue"
                                                data-field-index="@i"
                                                placeholder="Enter other image URL for Style @(i + 1)"
-                                               value="@style.OtherImageKids" />
+                                               value="@style.OtherImageUrlKids" />
                                         <span class="text-danger validation-span"></span>
                                     </div>
                                 </div>
@@ -525,7 +525,7 @@ else if (ViewBag.ErrorMessage != null)
         }
 
         function updateSizeSections(selectedValues) {
-            debugger
+            
             const $row = $('.row.mt-4'); // your row container
 
             const $adultSection = $('#adultSizesSection');
@@ -548,7 +548,7 @@ else if (ViewBag.ErrorMessage != null)
                 $(".other-image-field-kids").removeClass(('hidden'));
                 $row.addClass('mb-4');
             } else {
-                debugger
+                
                 if (selectedValues.includes('Adults')) {
                     $adultSection.removeClass('hidden');
                     $(".other-image-field-adults").removeClass(('hidden'));
@@ -716,11 +716,11 @@ else if (ViewBag.ErrorMessage != null)
             selectedcolors = $dropdown.find("option:selected").map(function () {
                 return $(this).text();
             }).get().join(", ");
-            debugger
+            
             var valueC = $("#StringColour").val();
-                        if ((valueC && valueC.trim() == "") || $("#idListingProduct").val() === '00000000-0000-0000-0000-000000000000') {
-            updateImageFields();
-                        }
+                       if ((valueC && valueC.trim() == "") || $("#idListingProduct").val() === '00000000-0000-0000-0000-000000000000') {
+                            updateImageFields();
+                       }
         }
 
         function updateStyleNameFields() {
@@ -756,6 +756,7 @@ else if (ViewBag.ErrorMessage != null)
 
 
         $('form').on('submit', function (e) {
+            $('#loaderNew').show();
             let hasErrors = false;
             $('.validation-span').text(''); // clear previous errors
 
@@ -792,23 +793,61 @@ else if (ViewBag.ErrorMessage != null)
                 }
             });
 
-            $('.other-image-field').each(function () {
-                const $field = $(this);
-                if (!$field.val().trim()) {
-                    hasErrors = true;
-                    const $container = $field.closest('.col-md-6');
-                    const labelText = $container.find('label').text();
-                    const selectedSize = labelText.includes("(Kids)") ? "(Kids)" : "(Adults)";
-                    const match = labelText.match(/Style (\d+) -/);
-                    const styleNumber = match ? match[1] : '?';
-                    // $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
-                    $container.find('.validation-span').text('Please enter the other' + selectedSize + ' image URL for Style ' + styleNumber);
-                }
-            });
 
+
+            if($('#sizeType').val() !== "all"){
+                if($('#sizeType').val() == "Adults"){
+                    $('.other-image-adultsValue').each(function () {
+                        const $field = $(this);
+                        if (!$field.val().trim()) {
+                            hasErrors = true;
+                            const $container = $field.closest('.col-md-6');
+                            const labelText = $container.find('label').text();
+                            const selectedSize = labelText.includes("(Kids)") ? "(Kids)" : "(Adults)";
+                            const match = labelText.match(/Style (\d+) -/);
+                            const styleNumber = match ? match[1] : '?';
+                            // $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+                            $container.find('.validation-span').text('Please enter the other' + selectedSize + ' image URL for Style ' + styleNumber);
+                        }
+                    });
+                }
+
+                if($('#sizeType').val() == "Kids"){
+                    $('.other-image-kidsValue').each(function () {
+                        const $field = $(this);
+                        if (!$field.val().trim()) {
+                            hasErrors = true;
+                            const $container = $field.closest('.col-md-6');
+                            const labelText = $container.find('label').text();
+                            const selectedSize = labelText.includes("(Kids)") ? "(Kids)" : "(Adults)";
+                            const match = labelText.match(/Style (\d+) -/);
+                            const styleNumber = match ? match[1] : '?';
+                            // $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+                            $container.find('.validation-span').text('Please enter the other' + selectedSize + ' image URL for Style ' + styleNumber);
+                        }
+                    });
+                }
+
+            }else{
+                $('.other-image-field').each(function () {
+                    const $field = $(this);
+                    if (!$field.val().trim()) {
+                        hasErrors = true;
+                        const $container = $field.closest('.col-md-6');
+                        const labelText = $container.find('label').text();
+                        const selectedSize = labelText.includes("(Kids)") ? "(Kids)" : "(Adults)";
+                        const match = labelText.match(/Style (\d+) -/);
+                        const styleNumber = match ? match[1] : '?';
+                        // $container.find('.validation-span').text(`Please enter the other image URL for Style ${styleNumber}`);
+                        $container.find('.validation-span').text('Please enter the other' + selectedSize + ' image URL for Style ' + styleNumber);
+                    }
+                });
+            }
             if (hasErrors) {
+                  $('#loaderNew').hide();
                 e.preventDefault();
                 $('.validation-span:visible').first().closest('.col-md-6').find('input').focus();
+                console.log('error')
             }
         });
 
@@ -845,7 +884,7 @@ else if (ViewBag.ErrorMessage != null)
             }
             let selectedSize = $('#sizeType').val();
 
-
+            
             if (!selectedSize) {
                 selectedSize = "Adults";
             }
@@ -884,7 +923,7 @@ else if (ViewBag.ErrorMessage != null)
                 //                data-field-index="${i}" />
                 //         <span class="text-danger validation-span"></span>
                 //     </div>`;
-                // debugger
+                // 
                 // if (selectedSize === "all") {
 
             // Adult
@@ -902,7 +941,7 @@ else if (ViewBag.ErrorMessage != null)
             row += `
                 <div class="col-md-6 mb-3 other-image-field-kids">
                     <label class="form-label other-images-label">Style ${i + 1} - Other (Kids) Image URL</label>
-                    <input type="text" name="StyleImages[${i}].OtherImageKids"
+                    <input type="text" name="StyleImages[${i}].OtherImageUrlKids"
                            class="form-control other-image-field other-image-kidsValue"
                            placeholder="Enter other image URL for Style ${i + 1} - Kids"
                            data-field-index="${i}-kids" />
@@ -930,7 +969,7 @@ else if (ViewBag.ErrorMessage != null)
             // Re-parse unobtrusive validation
             $.validator.unobtrusive.parse($container);
 
-          
+          updateSizeSections($('#sizeType').val());
         }
 
 
@@ -1071,8 +1110,9 @@ else if (ViewBag.ErrorMessage != null)
                $("#sizeType").trigger("chosen:updated").trigger("change");
 
 
-
-            }},100);
+               
+              
+            }},300);
 
             //Fill Color
             $('#listingProduct').change(function() {
@@ -1111,7 +1151,7 @@ else if (ViewBag.ErrorMessage != null)
                         $('#loaderNew').hide();
                         var value = $("#StringColour").val();
                         if (value && value.trim() !== "") {
-                            if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            //if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
                             {
                                 var selectedValues = value.split(',');
                                 $("#colours").val(selectedValues).trigger("change.select2");
@@ -1182,7 +1222,7 @@ else if (ViewBag.ErrorMessage != null)
 
                     var sSelectedKidsSize = $("#SelectedKidsSize").val();
                         if (sSelectedKidsSize && sSelectedKidsSize.trim() !== "") {
-                            if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            //if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
                             {
                                 var selectedValuesK = sSelectedKidsSize.split(',');
                                 $("#kidsSizes").val(selectedValuesK).trigger("change.select2");
@@ -1191,7 +1231,7 @@ else if (ViewBag.ErrorMessage != null)
 
                         var aSelectedAdultSize = $("#SelectedAdultSize").val();
                         if (aSelectedAdultSize && aSelectedAdultSize.trim() !== "") {
-                            if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            //if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
                             {
                                 var selectedValuesa = aSelectedAdultSize.split(',');
                                 $("#adultSizes").val(selectedValuesa).trigger("change.select2");
@@ -1215,42 +1255,18 @@ else if (ViewBag.ErrorMessage != null)
     <script>
          
              
-                  $(document).on("input", ".other-image-kidsValue", function () {
-                        if($('#sizeType').val() == "Kids"){
-                     let row = $(this).closest(".row");
-                     let adultsContainer = row.find(".other-image-field-adults");
-
-                     if (adultsContainer.hasClass("hidden"))
-                     {
-                         row.find(".other-image-adultsValue").val($(this).val());
-                     }
-                       }
-                 });
-             //}
-             
-                     $(document).on("input", ".other-image-adultsValue", function () {
-                           if($('#sizeType').val() == "Adults"){
-                      let row = $(this).closest(".row");
-                      let adultsContainer = row.find(".other-image-field-kids");
-
-                      if (adultsContainer.hasClass("hidden"))
-                      {
-                           row.find(".other-image-kidsValue").val($(this).val());
-                      }
-                          }
-                  });
-             
+               
          
-       $(".btn-submit-cust").click(function () {
-           var isValid = $("#listingForm").validate().form();
+       // $(".btn-submit-cust").click(function () {
+       //     var isValid = $("#listingForm").validate().form();
 
-        if (isValid) {
-              console.log("Form valid!");
-            $('#loaderNew').show();
-        } else {
-             console.log("Form has errors");
-            $('#loaderNew').hide();
-        }
-        })
+       //  if (isValid) {
+       //        console.log("Form valid!");
+       //      $('#loaderNew').show();
+       //  } else {
+       //       console.log("Form has errors");
+       //      $('#loaderNew').hide();
+       //  }
+       //  })
     </script>
 }

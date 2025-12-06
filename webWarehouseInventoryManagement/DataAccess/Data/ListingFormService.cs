@@ -254,8 +254,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                     Guid imageId = Guid.NewGuid();
 
                                     string imageQuery = @"INSERT INTO tblListingImage (idListingImage, idListingProduct, idListingStyle, idColor,
-                                                        Color,MainImageUrl, OtherImageUrl,OtherImageKids)
-                                                       VALUES (@idListingImage, @idListingProduct, @idListingStyle,@idColor,@Color, @MainImageUrl, @OtherImageUrl,@OtherImageKids)";
+                                                        Color,MainImageUrl, OtherImageUrlAdult,OtherImageUrlKids)
+                                                       VALUES (@idListingImage, @idListingProduct, @idListingStyle,@idColor,@Color, @MainImageUrl, @OtherImageUrlAdult,@OtherImageUrlKids)";
 
                                     await _sqlDataAccess.ExecuteDML(imageQuery, new
                                     {
@@ -265,14 +265,14 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                         idColor = colorImage.idColor,
                                         Color = colorImage.ColorName,
                                         MainImageUrl = colorImage.MainImage,
-                                        OtherImageUrl = image.OtherImage,
-                                        OtherImageKids = (listingFormModel.Size.ToLower() == "adults")? null:image.OtherImageKids,
+                                        OtherImageUrlAdult = image.OtherImage,
+                                        OtherImageUrlKids = (listingFormModel.Size.ToLower() == "adults")? null:image.OtherImageUrlKids,
                                     });
                                 }
                             }
 
-                            //string imageQuery = @"INSERT INTO tblListingImage (idListingImage, idListingProduct, idListingStyle, MainImageUrl, OtherImageUrl)
-                            //      VALUES (@idListingImage, @idListingProduct, @idListingStyle, @MainImageUrl, @OtherImageUrl)";
+                            //string imageQuery = @"INSERT INTO tblListingImage (idListingImage, idListingProduct, idListingStyle, MainImageUrl, OtherImageUrlAdult)
+                            //      VALUES (@idListingImage, @idListingProduct, @idListingStyle, @MainImageUrl, @OtherImageUrlAdult)";
 
                             //await _sqlDataAccess.ExecuteDML(imageQuery, new
                             //{
@@ -280,7 +280,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                             //    idListingProduct = listingFormModel.idListingProduct,
                             //    idListingStyle = styleId,
                             //   // MainImageUrl = image.MainImage,
-                            //    OtherImageUrl = image.OtherImage
+                            //    OtherImageUrlAdult = image.OtherImage
                             //});
                         }
 
@@ -575,10 +575,10 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 {
                     string insertQuery = @"INSERT INTO tblListingSKU (idListingProduct, idListingStyle, idListingColor, 
                                             idListingSize, SkuType, ParentSKU, SKU, Title, SizeCategory, SizeName, SizeMap, Color, SalePrice, 
-                                            MainImageUrl, OtherImageUrl, CountryOfOrigin)  VALUES 
+                                            MainImageUrl, OtherImageUrlAdult,OtherImageUrlKids, CountryOfOrigin)  VALUES 
                                             (@idListingProduct, @idListingStyle, @idListingColor, @idListingSize,
                                              @SkuType, @ParentSKU, @SKU, @Title, @SizeCategory, @SizeName, @SizeMap, @Color, @SalePrice,
-                                             @MainImageUrl, @OtherImageUrl, @CountryOfOrigin)";
+                                             @MainImageUrl, @OtherImageUrlAdult,@OtherImageUrlKids, @CountryOfOrigin)";
 
                     await _sqlDataAccess.ExecuteDML(insertQuery, new
                     {
@@ -596,7 +596,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         Color = childSKU.Color,
                         SalePrice = childSKU.SalePrice,
                         MainImageUrl = childSKU.MainImageUrl,
-                        OtherImageUrl = childSKU.OtherImageUrl,
+                        OtherImageUrlAdult = childSKU.OtherImageUrlAdult,
+						OtherImageUrlKids = childSKU.OtherImageUrlKids,
                         CountryOfOrigin = country
                     });
                 }
@@ -676,7 +677,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         // Find matching color image for this style/color
                         string mainImage = "";
                         string otherImage = styleImages.OtherImage ?? "";
-                        string otherImageKids = styleImages.OtherImageKids ?? "";
+                        string OtherImageUrlKids = styleImages.OtherImageUrlKids ?? "";
 
                         if (styleImages?.ColorImages != null)
                         {
@@ -686,7 +687,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                             if (colorImage != null)
                             {
-                                //otherImageKids = styleImages.OtherImageKids;
+                                //OtherImageUrlKids = styleImages.OtherImageUrlKids;
                                 mainImage = colorImage.MainImage ?? "";
                                 // Optional: override otherImage per color if needed
                                 // otherImage = colorImage.OtherImage ?? otherImage;
@@ -710,8 +711,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                 SizeMap = sizeInfo.SizeMap,
                                 SizeCategory = sizeInfo.SizeCategory,
                                 MainImageUrl = mainImage,
-                                OtherImageUrl = otherImage,
-                                OtherImageKids = otherImageKids,
+                                OtherImageUrlAdult = otherImage,
+                                OtherImageUrlKids = OtherImageUrlKids,
                                 CountryOfOrigin = listingFormModel.CountryName
                             };
 
@@ -909,19 +910,22 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "Hoodie";
 
                     if (listingFormModel.Size == "All") {
-                        sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
+                        sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
                     }
 
                     if (listingFormModel.Size == "all")
                     {
                         if (child.SizeCategory == "Kids")
-                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageKids;
+                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlKids;
                         else
-                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
+                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
                     }   
                     else {
-                        sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrl;
-                    }
+						if (child.SizeCategory == "Kids")
+							sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlKids;
+						else
+							sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
+					}
 
                     sheet.Cells[currentRow, columnMap["parent_child"]].Value = "Child";
 
@@ -1295,7 +1299,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 product.SelectedKidsSize = string.Join(",", product.KidsSize);
 
             // ---------- Images ----------
-            //string queryImages = @"SELECT idListingImage, MainImageUrl as MainImage, OtherImageUrl as OtherImage, idListingStyle
+            //string queryImages = @"SELECT idListingImage, MainImageUrl as MainImage, OtherImageUrlAdult as OtherImage, idListingStyle
             //   FROM tblListingImage WHERE idListingProduct = @idListingProduct";
 
             //product.StyleImages = (await _sqlDataAccess.GetData<StyleImage, dynamic>(
@@ -1310,7 +1314,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
             // ---------- Fetch images ----------
             var images = await _sqlDataAccess.GetData<ListingImageDto, dynamic>(
-                @"SELECT idListingImage, idListingStyle, idColor, Color, MainImageUrl, OtherImageUrl,OtherImageKids
+                @"SELECT idListingImage, idListingStyle, idColor, Color, MainImageUrl, OtherImageUrlAdult,OtherImageUrlKids
                 FROM tblListingImage WHERE idListingProduct = @idListingProduct", new { idListingProduct });
 
             // ---------- Map Styles with Images ----------
@@ -1329,17 +1333,17 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         idColor = img.idColor.ToString(),
                         ColorName = img.Color,
                         MainImage = img.MainImageUrl,
-                        OtherImage = img.OtherImageUrl,
-                        OtherImageKids = img.OtherImageKids
+                        OtherImage = img.OtherImageUrlAdult,
+                        OtherImageUrlKids = img.OtherImageUrlKids
                     }).ToList(),
 
                     // This gives you one OtherImage per Style
 
-                    OtherImage = imagesForStyle.FirstOrDefault()?.OtherImageUrl ?? "",
+                    OtherImage = imagesForStyle.FirstOrDefault()?.OtherImageUrlAdult ?? "",
 
-                    OtherImageKids = product.Size.ToLower() == "adults"
-    ? (imagesForStyle.FirstOrDefault()?.OtherImageUrl ?? "")
-    : (imagesForStyle.FirstOrDefault()?.OtherImageKids ?? "")
+                    OtherImageUrlKids = product.Size.ToLower() == "adults"
+    ? (imagesForStyle.FirstOrDefault()?.OtherImageUrlAdult ?? "")
+    : (imagesForStyle.FirstOrDefault()?.OtherImageUrlKids ?? "")
                 };
             }).OrderBy(s => s.StyleNo).ToList();
 
