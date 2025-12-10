@@ -1075,7 +1075,16 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 {
                     foreach (var kidsSize in listingFormModel.KidsSize)
                     {
-                        var sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
+                        SizeModel sizeInfo = null;
+                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize) != null)
+                        {
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
+                        }
+                        else
+                        {
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == kidsSize);
+                        }
+                        //var sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
                         string sizeMap = sizeInfo.SizeMap;
                         sizesToProcess.Add((kidsSize, sizeMap, "Kids"));
                     }
@@ -1098,7 +1107,15 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 {
                     foreach (var adultSize in listingFormModel.AdultSize)
                     {
-                        var sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize);
+                        SizeModel sizeInfo = null;
+                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize) != null)
+                        {
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize);
+                        }
+                        else
+                        {
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == adultSize);
+                        }
                         string sizeMap = sizeInfo.SizeMap;
                         sizesToProcess.Add((adultSize, sizeMap, "Adults"));
                     }
@@ -1355,11 +1372,13 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
 
         #region Get Colors
-        public async Task<ResponseModel> GetColorsByProductType(string productType)
+        public async Task<ResponseModel> GetColorsByProductType(string productType, string size)
         {
             ResponseModel response = new ResponseModel();
             string query = string.Empty;
-
+            bool ignoreSizeFilter =
+                    size != null &&
+                    size.Equals("all", StringComparison.OrdinalIgnoreCase);
             try
             {
                 query = @"
@@ -1367,10 +1386,11 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             FROM tblProductsInventory pin
             INNER JOIN tblColor c ON pin.color = c.Color
             WHERE pin.product_type = @ProductType
+            AND (@IgnoreSizeFilter = 1 OR pin.size_type = @Size)
             ORDER BY c.Color ASC";
 
                 // Assuming you have a ColorModel to map idColor, Color, ColorMap
-                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType });
+                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType , IgnoreSizeFilter = ignoreSizeFilter ? 1 : 0, Size = size });
 
                 response.IsError = false;
                 response.Result = data;
@@ -1388,34 +1408,113 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
         #endregion
 
         #region Return Size
-        public async Task<ResponseModel> GetSizesByProductAndColors(string productType, List<string> colorIds)
+        public async Task<ResponseModel> GetSizesByProductAndColors(string productType, List<string> colorIds, string  size)
         {
             ResponseModel response = new ResponseModel();
 
             try
             {
                 // When "all" is passed → ignore color filter
-                bool ignoreColorFilter =
-                    colorIds != null &&
-                    colorIds.Count == 1 &&
-                    colorIds[0].Equals("all", StringComparison.OrdinalIgnoreCase);
+                bool ignoreColorFilter = false;
+                List<string> colors = null;
+                string colorsCsv = "";
+                string sizeCsv = "";
+              
 
-                string query = @"
-SELECT DISTINCT s.*, sc.SizeCategory
-FROM tblProductsInventory pin
-INNER JOIN tblSizeCategory sc ON pin.size_type = sc.SizeCategory
-INNER JOIN tblSizes s ON s.idSizeCategory = sc.idSizeCategory
-INNER JOIN tblColor c ON pin.color = c.Color
-WHERE pin.product_type = @ProductType
-  AND (@IgnoreColorFilter = 1 OR c.idColor IN @ColorIds)
-ORDER BY sc.SizeCategory ASC, s.idSize ASC;
-";
+                if (colorIds != null && colorIds.Count > 0 && !colorIds.Select(x => x == "all").FirstOrDefault())
+                {                   
+
+                    string colorsCsv1 = string.Join(",", colorIds.Select(x=>x).ToList());
+                    string queryColors = @"SELECT DISTINCT color  FROM tblColor 
+                           WHERE idColor IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ','))";
+
+                    var StringColors = await _sqlDataAccess.GetData<string, dynamic>(
+                        queryColors, new { ColorsCsv = colorsCsv1 }
+                    );
+
+                    // Store them as string (since your <select> uses string values)
+                    colors = StringColors.Select(c => c.ToString()).ToList();
+                    if (colors != null && colors.Count > 0)
+                        ignoreColorFilter = true;
+                    if (ignoreColorFilter)
+                    {
+                        colorsCsv = !ignoreColorFilter ? string.Empty : string.Join(",", colors);
+                    }
+
+                }
+                List<string> fixSize;
+
+                if (size != null && size.Equals("all", StringComparison.OrdinalIgnoreCase))
+                {
+                    // "all" means include both
+                    fixSize = new List<string> { "Kids", "Adults" };
+                }
+                else if (size != null && size.Equals("Kids", StringComparison.OrdinalIgnoreCase))
+                {
+                    fixSize = new List<string> { "Kids" };
+                }
+                else if (size != null && size.Equals("Adults", StringComparison.OrdinalIgnoreCase))
+                {
+                    fixSize = new List<string> { "Adults" };
+                }
+                else
+                {
+                    // Default case if size is null or unknown
+                    fixSize = new List<string>();
+                }
+
+                sizeCsv = string.Join(",", fixSize); // no extra quotes
+
+                if (!string.IsNullOrEmpty(productType) && size == "all" && colorIds == null)
+                {
+                    response.IsError = false;
+                    response.Result = null;
+                    return response;
+                }
+                if (!string.IsNullOrEmpty(productType) && size == "Kids" && colorIds == null)
+                {
+                    response.IsError = false;
+                    response.Result = null;
+                    return response;
+                }
+                if (!string.IsNullOrEmpty(productType) && size == "Adults" && colorIds == null)
+                {
+                    response.IsError = false;
+                    response.Result = null;
+                    return response;
+                }
+                string query = @"WITH RankedSizes AS (
+                                    SELECT 
+                                        pin.size AS sizeName,
+                                        pin.size_type AS sizeCategory,
+                                        ROW_NUMBER() OVER (
+                                            PARTITION BY pin.size
+                                            ORDER BY CASE WHEN pin.size_type = 'Adults' THEN 1 ELSE 2 END
+                                        ) AS rn
+                                    FROM tblProductsInventory AS pin
+                                    WHERE pin.product_type = @ProductType                                      
+	                                 
+ AND (@ColorsCsv IS NULL OR @ColorsCsv = '''' OR pin.color IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ',')))
+ AND (@SizesCsv IS NULL OR @SizesCsv = '''' OR pin.size_type IN (SELECT value FROM STRING_SPLIT(@SizesCsv, ',')))
+                                ),
+                                OrderedSizes AS (
+                                    SELECT sizeName, sizeCategory, rn, CASE WHEN sizeCategory = 'Kids' THEN TRY_CAST(LEFT(sizeName, CHARINDEX('-', sizeName + '-') - 1) AS INT) ELSE NULL END AS kidStart,                                        
+                                        LEN(sizeName) AS adultLen
+                                    FROM RankedSizes
+                                    WHERE rn = 1
+                                )
+                                SELECT sizeName, sizeCategory
+                                FROM OrderedSizes
+                                ORDER BY 
+                                    CASE WHEN sizeCategory = 'Kids' THEN kidStart ELSE 1000 END,
+                                    CASE WHEN sizeCategory = 'Adults' THEN adultLen ELSE 0 END,
+                                    sizeName;";
 
                 var parameters = new
                 {
                     ProductType = productType,
-                    ColorIds = ignoreColorFilter ? new List<string>() : colorIds,
-                    IgnoreColorFilter = ignoreColorFilter ? 1 : 0
+                    ColorsCsv = string.IsNullOrEmpty(colorsCsv) ? null : colorsCsv,
+                    SizesCsv = string.IsNullOrEmpty(sizeCsv) ? null : sizeCsv
                 };
 
                 var data = await _sqlDataAccess.GetData<SizeModel, dynamic>(query, parameters);

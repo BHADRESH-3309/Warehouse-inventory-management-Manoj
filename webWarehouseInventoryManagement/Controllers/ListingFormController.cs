@@ -142,7 +142,6 @@ namespace webWarehouseInventoryManagement.Controllers
                 // here check path of return response filename
                 // Full path 
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);
-                filePath = filePath.Replace("Warehouse-inventory-management-Manoj\\webWarehouseInventoryManagement\\wwwroot/ListingFiles", "Temp");
                 if (!System.IO.File.Exists(filePath))
                 {
                     ViewBag.ErrorMessage = "Template file not found!";
@@ -165,8 +164,8 @@ namespace webWarehouseInventoryManagement.Controllers
                     }
 
                     // ✅ UPDATE the values below Brand Name
-                    worksheet.Cells[2, 3].Value = "FULLY MERCHED";
-                    worksheet.Cells[3, 3].Value = "fully_merched";
+                    //worksheet.Cells[2, 3].Value = "FULLY MERCHED";
+                    //worksheet.Cells[3, 3].Value = "fully_merched";
 
                     // Save
                     package.Save();
@@ -192,7 +191,6 @@ namespace webWarehouseInventoryManagement.Controllers
         public IActionResult DownloadTemplate(string fileName)
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);
-            filePath = filePath.Replace("Warehouse-inventory-management-Manoj\\webWarehouseInventoryManagement\\wwwroot/ListingFiles", "Temp");
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound("File not found.");
@@ -230,27 +228,27 @@ namespace webWarehouseInventoryManagement.Controllers
 
 
         [HttpGet]
-        public async Task<JsonResult> GetColors(string productType)
+        public async Task<JsonResult> GetColors(string productType, string size)
         {
             if (string.IsNullOrEmpty(productType))
             {
                 return Json(new List<string>());
             }
-            var result = await _services.GetColorsByProductType(productType);
+            var result = await _services.GetColorsByProductType(productType,size);
             
             return Json(result);
         }
         [HttpGet]
-        public async Task<JsonResult> GetSizesByProductAndColors(string productType, List<string> colors)
+        public async Task<JsonResult> GetSizesByProductAndColors(string productType, List<string> colors = null, string size =null)
         {
             // Validate inputs
-            if (string.IsNullOrEmpty(productType) || colors == null || colors.Count == 0)
+            if (string.IsNullOrEmpty(productType) && string.IsNullOrEmpty(size) )
             {
                 return Json(new List<string>());
             }
 
             // Use productType and colors to query sizes
-            var result = await _services.GetSizesByProductAndColors(productType, colors);
+            var result = await _services.GetSizesByProductAndColors(productType, colors, size);
 
             return Json(result);
         }

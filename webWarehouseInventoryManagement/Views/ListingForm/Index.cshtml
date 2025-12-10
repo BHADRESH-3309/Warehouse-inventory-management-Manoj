@@ -136,16 +136,6 @@ else if (ViewBag.ErrorMessage != null)
                         <span asp-validation-for="NumberOfStyles" class="text-danger"></span>
                     </div>
                     <div class="col-lg-3 marginClass">
-                        <label asp-for="Colour">Colours:</label>
-                        @* <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" asp-items="@(new SelectList(Model.Colors, "idColor", "Color"))" multiple="multiple" autocomplete="off">
-                            <option value="all">All</option>
-                        </select> *@
-                        <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" multiple="multiple" autocomplete="off">
-                            <option value="all">All</option>
-                        </select>
-                        <span asp-validation-for="Colour" class="text-danger"></span>
-                    </div>
-                    <div class="col-lg-3 marginClass">
                         <label asp-for="Size">Sizes :</label>
                         <div class="col-lg-12 d-flex" style="padding:0px !important;">
                             <select class="form-control" id="sizeType" asp-for="Size">
@@ -156,6 +146,16 @@ else if (ViewBag.ErrorMessage != null)
                             </select>
                         </div>
                         <span asp-validation-for="Size" class="text-danger"></span>
+                    </div>
+                    <div class="col-lg-3 marginClass">
+                        <label asp-for="Colour">Colours:</label>
+                        @* <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" asp-items="@(new SelectList(Model.Colors, "idColor", "Color"))" multiple="multiple" autocomplete="off">
+                            <option value="all">All</option>
+                        </select> *@
+                        <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" multiple="multiple" autocomplete="off">
+                            <option value="all">All</option>
+                        </select>
+                        <span asp-validation-for="Colour" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mt-4">
@@ -435,7 +435,58 @@ else if (ViewBag.ErrorMessage != null)
             }
 
         });
+        function fillColor1() {
+                $('#loaderNew').show();
+                $('#colours').val(null);
+                $('#colours').trigger('change');
+                $('#adultSizes').trigger('change');
+                $('#kidsSizes').trigger('change');
 
+                var productType = $('#listingProduct').val();
+                if (!productType) {
+                    //$('#colours').html('<option value="all">--Select--</option>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("GetColors", "ListingForm")',  // Adjust controller name if needed
+                    type: 'GET',
+                    data: { productType: productType, size: $('#sizeType').val() },
+                    success: function(response) {
+                        var options = '';//'<option value="all">All</option>';
+
+                        // Check if response.Result exists and is an array
+                        if (response && response.result && Array.isArray(response.result)) {
+                            options = '<option value="all">All</option>';
+                            $.each(response.result, function(index, color) {
+
+                                options += '<option value="' + color.idColor + '">' + color.color + '</option>';
+                            });
+                        } else {
+                            // If no colors returned, show a default option
+                            //options = '<option value="all">--No Colors Available--</option>';
+                        }
+
+                        $('#colours').html(options);
+                        $('#loaderNew').hide();
+                        var value = $("#StringColour").val();
+                        if (value && value.trim() !== "") {
+                            //if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            {
+                                var selectedValues = value.split(',');
+                                $("#colours").val(selectedValues).trigger("change.select2");
+                                $('#colours').trigger('change');
+                                $("#StringColour").val('')
+                            }
+                        }
+
+                    },
+                    error: function() {
+                      // $('#colours').html('<option value="all">--Select--</option>');
+                      $('#loaderNew').hide();
+                    }
+                });
+            }
         function initializeDropdowns() {
 
             $('#adultSizes').select2({
@@ -467,7 +518,8 @@ else if (ViewBag.ErrorMessage != null)
             $('#sizeType').on('change', function () {
                 handleSizeTypeChange();
                 setDynamicSizeNameConcate($(this).val());
-                //updateImageFields();
+                $('#adultSizes').trigger('change');
+                $("#SelectedAdultSize").val('');$("#SelectedKidsSize").val('');
             });
 
 
@@ -538,10 +590,13 @@ else if (ViewBag.ErrorMessage != null)
             // Clear selections each time
             $('#adultSizes').val(null).trigger('change');
             $('#kidsSizes').val(null).trigger('change');
-
-            
+             var options = '';
+             options = '<option value="all">All</option>';
+             $('#colours').html(options);
+             setTimeout(function(){$("#colours").val(null).trigger("change.select2")},100);
             if (selectedValues.includes('all')) {
                 // Show both sections
+                fillColor1();
                 $adultSection.removeClass('hidden');
                 $kidsSection.removeClass('hidden');
                 $(".other-image-field-adults").removeClass(('hidden'));
@@ -550,11 +605,13 @@ else if (ViewBag.ErrorMessage != null)
             } else {
                 
                 if (selectedValues.includes('Adults')) {
+                    fillColor1();
                     $adultSection.removeClass('hidden');
                     $(".other-image-field-adults").removeClass(('hidden'));
                     $(".other-image-field-kids").addClass(('hidden'));
                 }
                 if (selectedValues.includes('Kids')) {
+                    fillColor1();
                     $kidsSection.removeClass('hidden');
                     $(".other-image-field-adults").addClass(('hidden'));
                     $(".other-image-field-kids").removeClass(('hidden'));
@@ -562,6 +619,48 @@ else if (ViewBag.ErrorMessage != null)
                 $row.addClass('mb-4');
             }
             
+        }
+
+        function updateSizeSectionsNew(selectedValues) {
+
+            const $row = $('.row.mt-4'); // your row container
+
+            const $adultSection = $('#adultSizesSection');
+            const $kidsSection = $('#kidsSizesSection');
+
+            // Hide both sections initially
+            $adultSection.addClass('hidden');
+            $kidsSection.addClass('hidden');
+
+            // Clear selections each time
+            $('#adultSizes').val(null).trigger('change');
+            $('#kidsSizes').val(null).trigger('change');
+             
+            if (selectedValues.includes('all')) {
+                // Show both sections
+                
+                $adultSection.removeClass('hidden');
+                $kidsSection.removeClass('hidden');
+                $(".other-image-field-adults").removeClass(('hidden'));
+                $(".other-image-field-kids").removeClass(('hidden'));
+                $row.addClass('mb-4');
+            } else {
+
+                if (selectedValues.includes('Adults')) {
+                    
+                    $adultSection.removeClass('hidden');
+                    $(".other-image-field-adults").removeClass(('hidden'));
+                    $(".other-image-field-kids").addClass(('hidden'));
+                }
+                if (selectedValues.includes('Kids')) {
+                    
+                    $kidsSection.removeClass('hidden');
+                    $(".other-image-field-adults").addClass(('hidden'));
+                    $(".other-image-field-kids").removeClass(('hidden'));
+                }
+                $row.addClass('mb-4');
+            }
+
         }
 
         function attachSizeAllHandlers() {
@@ -969,7 +1068,7 @@ else if (ViewBag.ErrorMessage != null)
             // Re-parse unobtrusive validation
             $.validator.unobtrusive.parse($container);
 
-          updateSizeSections($('#sizeType').val());
+          //updateSizeSections($('#sizeType').val());
         }
 
 
@@ -1098,31 +1197,14 @@ else if (ViewBag.ErrorMessage != null)
         };
     </script>
     <script>
-        $(document).ready(function() {
-
-
-            setTimeout(function(){
-                
-
-            if($("#listingProduct").val())
-            {
-               $("#listingProduct").trigger("chosen:updated").trigger("change");
-               $("#sizeType").trigger("chosen:updated").trigger("change");
-
-
-               
-              
-            }},300);
-
-            //Fill Color
-            $('#listingProduct').change(function() {
+         function fillColor() {
                 $('#loaderNew').show();
-                $('#colours').val(null).trigger('change');
-                $('#colours').trigger('change');
+                //$('#colours').val(null);
+                //$('#colours').trigger('change');
                 $('#adultSizes').trigger('change');
                 $('#kidsSizes').trigger('change');
 
-                var productType = $(this).val();
+                var productType = $('#listingProduct').val();
                 if (!productType) {
                     //$('#colours').html('<option value="all">--Select--</option>');
                     return;
@@ -1131,7 +1213,7 @@ else if (ViewBag.ErrorMessage != null)
                 $.ajax({
                     url: '@Url.Action("GetColors", "ListingForm")',  // Adjust controller name if needed
                     type: 'GET',
-                    data: { productType: productType },
+                    data: { productType: productType, size: $('#sizeType').val() },
                     success: function(response) {
                         var options = '';//'<option value="all">All</option>';
 
@@ -1156,7 +1238,7 @@ else if (ViewBag.ErrorMessage != null)
                                 var selectedValues = value.split(',');
                                 $("#colours").val(selectedValues).trigger("change.select2");
                                 $('#colours').trigger('change');
-                                $("#StringColour").val('')
+                                //$("#StringColour").val('')
                             }
                         }
 
@@ -1166,27 +1248,86 @@ else if (ViewBag.ErrorMessage != null)
                       $('#loaderNew').hide();
                     }
                 });
-            });
+            }
+
+        $(document).ready(function() {
+
+           
+            setTimeout(function(){
+               if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000'){
+                    fillColor();
+               
+               }
+
+            if($("#listingProduct").val())
+            {
+               // $("#listingProduct").trigger("chosen:updated").trigger("change");
+               // $("#sizeType").trigger("chosen:updated").trigger("change");
+               updateSizeSectionsNew($('#sizeType').val());
+
+                var sSelectedKidsSize = $("#SelectedKidsSize").val();
+                        if (sSelectedKidsSize && sSelectedKidsSize.trim() !== "") {
+                            //if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            {
+                                var selectedValuesK = sSelectedKidsSize.split(',');
+                                $("#kidsSizes").val(selectedValuesK).trigger("change.select2");
+                            }
+                        }
+
+                        var aSelectedAdultSize = $("#SelectedAdultSize").val();
+                        if (aSelectedAdultSize && aSelectedAdultSize.trim() !== "") {
+                            //if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000')
+                            {
+                                var selectedValuesa = aSelectedAdultSize.split(',');
+                                $("#adultSizes").val(selectedValuesa).trigger("change.select2");
+                            }
+                        }
+              
+            }},500);
+            
+            //Fill Color
+            $('#listingProduct').change(
+                function(){
+                let selectedSize2 = $('#sizeType').val();
+                    if (!selectedSize2) {
+                       fillColor();
+                    }
+                });
+
+
+            
+
 
             //Fill Size
                  $('#colours').change(function() {
+                     
                      $('#loaderNew').show();
             var productType = $('#listingProduct').val();   // single select
             var selectedColors = $(this).val();             // multi-select, array of colors
-
+            if(selectedColors?.length > 0){
+            
+            }
             if (!productType) {
                 $('#adultSizes').html('<option value="all">--Select Product First--</option>');
                 $('#kidsSizes').html('<option value="all">--Select Product First--</option>');
                 return;
             }
+            let selectedSize1 = $('#sizeType').val();
 
+
+            if (!selectedSize1) {
+                selectedSize1 = "all";
+            }
+
+            let selectedColorsToSend = Array.isArray(selectedColors) ? selectedColors : [selectedColors];
             $.ajax({
                 url: '@Url.Action("GetSizesByProductAndColors", "ListingForm")',
                 type: 'GET',
                 traditional: true,  // Important for sending arrays in query string
                 data: {
                     productType: productType,
-                    colors: selectedColors   // this is an array
+                    colors: selectedColorsToSend,
+                    size: selectedSize1// this is an array
                 },
                 success: function(response) {
                     $('#loaderNew').hide();
@@ -1237,8 +1378,10 @@ else if (ViewBag.ErrorMessage != null)
                                 $("#adultSizes").val(selectedValuesa).trigger("change.select2");
                             }
                         }
-
-
+                        if($("#idListingProduct").val() === '00000000-0000-0000-0000-000000000000'){
+                            
+                        setTimeout(function(){updateSizeSectionsNew($('#sizeType').val());},100);
+                        }
                 },
                 error: function() {
                     $('#loaderNew').hide();
