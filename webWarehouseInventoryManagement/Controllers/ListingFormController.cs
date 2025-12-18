@@ -141,7 +141,7 @@ namespace webWarehouseInventoryManagement.Controllers
 
                 // here check path of return response filename
                 // Full path 
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);                
                 if (!System.IO.File.Exists(filePath))
                 {
                     ViewBag.ErrorMessage = "Template file not found!";
@@ -190,7 +190,7 @@ namespace webWarehouseInventoryManagement.Controllers
         // New Action for downloading file
         public IActionResult DownloadTemplate(string fileName)
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);            
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound("File not found.");

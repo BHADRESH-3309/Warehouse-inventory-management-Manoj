@@ -1339,9 +1339,9 @@ else if (ViewBag.ErrorMessage != null)
                     if (response && response.result && Array.isArray(response.result)) {
                         // Loop through all sizes and split into adults and kids
                         $.each(response.result, function(index, size) {
-                            if (size.sizeCategory === "Adults") {
+                            if (size.sizeCategory === "1") {
                                 adultOptions += '<option value="' + size.sizeName + '">' + size.sizeName + '</option>';
-                            } else if (size.sizeCategory === "Kids") {
+                            } else if (size.sizeCategory === "2") {
                                 kidsOptions += '<option value="' + size.sizeName + '">' + size.sizeName + '</option>';
                             }
                         });

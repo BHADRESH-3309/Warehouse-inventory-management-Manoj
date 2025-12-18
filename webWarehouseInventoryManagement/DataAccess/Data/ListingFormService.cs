@@ -1383,14 +1383,14 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             {
                 query = @"
             SELECT DISTINCT c.idColor, c.Color, c.ColorMap
-            FROM tblProductsInventory pin
-            INNER JOIN tblColor c ON pin.color = c.Color
+            FROM tblSizes pin
+            INNER JOIN tblColor c ON pin.idColor = c.idColor
             WHERE pin.product_type = @ProductType
-            AND (@IgnoreSizeFilter = 1 OR pin.size_type = @Size)
+            AND (@IgnoreSizeFilter = 1 OR pin.idSizeCategory = @Size)
             ORDER BY c.Color ASC";
 
                 // Assuming you have a ColorModel to map idColor, Color, ColorMap
-                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType , IgnoreSizeFilter = ignoreSizeFilter ? 1 : 0, Size = size });
+                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType , IgnoreSizeFilter = ignoreSizeFilter ? 1 : 0, Size = (size == "Kids")?2: (size == "Adults") ? 1 : (int?)null });
 
                 response.IsError = false;
                 response.Result = data;
@@ -1425,10 +1425,10 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 {                   
 
                     string colorsCsv1 = string.Join(",", colorIds.Select(x=>x).ToList());
-                    string queryColors = @"SELECT DISTINCT color  FROM tblColor 
+                    string queryColors = @"SELECT DISTINCT idColor  FROM tblColor 
                            WHERE idColor IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ','))";
 
-                    var StringColors = await _sqlDataAccess.GetData<string, dynamic>(
+                    var StringColors = await _sqlDataAccess.GetData<Guid, dynamic>(
                         queryColors, new { ColorsCsv = colorsCsv1 }
                     );
 
@@ -1447,15 +1447,15 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 if (size != null && size.Equals("all", StringComparison.OrdinalIgnoreCase))
                 {
                     // "all" means include both
-                    fixSize = new List<string> { "Kids", "Adults" };
+                    fixSize = new List<string> { "1", "2" };
                 }
                 else if (size != null && size.Equals("Kids", StringComparison.OrdinalIgnoreCase))
                 {
-                    fixSize = new List<string> { "Kids" };
+                    fixSize = new List<string> { "2" };
                 }
                 else if (size != null && size.Equals("Adults", StringComparison.OrdinalIgnoreCase))
                 {
-                    fixSize = new List<string> { "Adults" };
+                    fixSize = new List<string> { "1" };
                 }
                 else
                 {
@@ -1483,32 +1483,28 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     response.Result = null;
                     return response;
                 }
-                string query = @"WITH RankedSizes AS (
-                                    SELECT 
-                                        pin.size AS sizeName,
-                                        pin.size_type AS sizeCategory,
-                                        ROW_NUMBER() OVER (
-                                            PARTITION BY pin.size
-                                            ORDER BY CASE WHEN pin.size_type = 'Adults' THEN 1 ELSE 2 END
-                                        ) AS rn
-                                    FROM tblProductsInventory AS pin
-                                    WHERE pin.product_type = @ProductType                                      
-	                                 
- AND (@ColorsCsv IS NULL OR @ColorsCsv = '''' OR pin.color IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ',')))
- AND (@SizesCsv IS NULL OR @SizesCsv = '''' OR pin.size_type IN (SELECT value FROM STRING_SPLIT(@SizesCsv, ',')))
-                                ),
-                                OrderedSizes AS (
-                                    SELECT sizeName, sizeCategory, rn, CASE WHEN sizeCategory = 'Kids' THEN TRY_CAST(LEFT(sizeName, CHARINDEX('-', sizeName + '-') - 1) AS INT) ELSE NULL END AS kidStart,                                        
-                                        LEN(sizeName) AS adultLen
-                                    FROM RankedSizes
-                                    WHERE rn = 1
-                                )
-                                SELECT sizeName, sizeCategory
-                                FROM OrderedSizes
-                                ORDER BY 
-                                    CASE WHEN sizeCategory = 'Kids' THEN kidStart ELSE 1000 END,
-                                    CASE WHEN sizeCategory = 'Adults' THEN adultLen ELSE 0 END,
-                                    sizeName;";
+                string query = @"
+WITH DistinctSizes AS (
+    SELECT
+        pin.SizeName AS sizeName,
+        pin.idSizeCategory AS sizeCategory,
+        pin.SortOrder,
+        ROW_NUMBER() OVER (
+            PARTITION BY pin.SizeName
+            ORDER BY pin.idSizeCategory
+        ) AS rn
+    FROM tblSizes pin
+    WHERE pin.product_type = @ProductType
+      AND (@ColorsCsv IS NULL OR @ColorsCsv = '' 
+           OR pin.idColor IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ',')))
+      AND (@SizesCsv IS NULL OR @SizesCsv = '' 
+           OR pin.idSizeCategory IN (SELECT value FROM STRING_SPLIT(@SizesCsv, ',')))
+)
+SELECT sizeName, sizeCategory
+FROM DistinctSizes
+WHERE rn = 1
+ORDER BY SortOrder;
+";
 
                 var parameters = new
                 {
@@ -1517,7 +1513,11 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     SizesCsv = string.IsNullOrEmpty(sizeCsv) ? null : sizeCsv
                 };
 
-                var data = await _sqlDataAccess.GetData<SizeModel, dynamic>(query, parameters);
+                var data = await _sqlDataAccess
+                    .GetData<SizeModel, dynamic>(query, parameters);
+
+
+
 
                 response.IsError = false;
                 response.Result = data;
@@ -1530,7 +1530,6 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
             return response;
         }
-
 
 
 
