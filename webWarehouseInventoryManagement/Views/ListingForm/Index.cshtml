@@ -1206,6 +1206,7 @@ else if (ViewBag.ErrorMessage != null)
 
                 var productType = $('#listingProduct').val();
                 if (!productType) {
+                    $('#loaderNew').hide();
                     //$('#colours').html('<option value="all">--Select--</option>');
                     return;
                 }
@@ -1308,6 +1309,7 @@ else if (ViewBag.ErrorMessage != null)
             
             }
             if (!productType) {
+                $('#loaderNew').hide();
                 $('#adultSizes').html('<option value="all">--Select Product First--</option>');
                 $('#kidsSizes').html('<option value="all">--Select Product First--</option>');
                 return;
@@ -1394,22 +1396,40 @@ else if (ViewBag.ErrorMessage != null)
             });
 
 
-    </script>
-    <script>
-         
-             
-               
-         
-       // $(".btn-submit-cust").click(function () {
-       //     var isValid = $("#listingForm").validate().form();
+        $("#listingProduct").on("change", function () {
+            var selectedValue = $(this).val();
+            if (!selectedValue) {
+               $('#loaderNew').hide();
+               var optionsN = '';
+               optionsN = '<option value="all">All</option>';
+                $('#colours').html(optionsN);                
+                $("#colours").val('').trigger("change.select2");
+                $("#sizeType").val('').trigger("change.select2");
 
-       //  if (isValid) {
-       //        console.log("Form valid!");
-       //      $('#loaderNew').show();
-       //  } else {
-       //       console.log("Form has errors");
-       //      $('#loaderNew').hide();
-       //  }
-       //  })
+                 $('#adultSizes').html('');
+                 $('#kidsSizes').html('');
+
+                 $("#adultSizes").val('').trigger("change.select2");
+                 $("#adultSizes").val('').trigger("change.select2");
+                 handleSizeTypeChange();
+                return;
+            }else{
+             $('#loaderNew').hide();
+               var optionsN = '';
+               optionsN = '<option value="all">All</option>';
+                $('#colours').html(optionsN);
+                $("#colours").val('').trigger("change.select2");
+                $("#sizeType").val('').trigger("change.select2");
+
+                 $('#adultSizes').html('');
+                 $('#kidsSizes').html('');
+
+                 $("#adultSizes").val('').trigger("change.select2");
+                 $("#adultSizes").val('').trigger("change.select2");
+                 handleSizeTypeChange();
+            }
+
+        });
+
     </script>
 }

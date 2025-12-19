@@ -1076,13 +1076,13 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     foreach (var kidsSize in listingFormModel.KidsSize)
                     {
                         SizeModel sizeInfo = null;
-                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize) != null)
+                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == kidsSize.ToLower().Trim()) != null)
                         {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == kidsSize.ToLower().Trim());
                         }
                         else
                         {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == kidsSize);
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName.ToLower().Trim() == kidsSize.ToLower().Trim());
                         }
                         //var sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
                         string sizeMap = sizeInfo.SizeMap;
@@ -1108,13 +1108,13 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     foreach (var adultSize in listingFormModel.AdultSize)
                     {
                         SizeModel sizeInfo = null;
-                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize) != null)
+                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == adultSize.ToLower().Trim()) != null)
                         {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize);
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == adultSize);
                         }
                         else
                         {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == adultSize);
+                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize);
                         }
                         string sizeMap = sizeInfo.SizeMap;
                         sizesToProcess.Add((adultSize, sizeMap, "Adults"));
