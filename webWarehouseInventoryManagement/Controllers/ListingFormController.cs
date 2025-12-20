@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using webWarehouseInventoryManagement.DataAccess.Data;
 using webWarehouseInventoryManagement.Models;
@@ -69,7 +70,7 @@ namespace webWarehouseInventoryManagement.Controllers
             string message = string.Empty;
             try
             {
-                listingFormModel.Colors = _services.GetColors().GetAwaiter().GetResult().ToList();
+                listingFormModel.Colors = _services.GetColorsByProductTypeForEdit(listingFormModel.ListingProduct, listingFormModel.Size).GetAwaiter().GetResult();                
                 listingFormModel.Countrys = _services.GetCountryOfOrigin().GetAwaiter().GetResult().ToList();
                 listingFormModel.DesignTypes = _services.GetDesignType().GetAwaiter().GetResult().ToList();
 
@@ -83,6 +84,7 @@ namespace webWarehouseInventoryManagement.Controllers
                 var adultSizes = adultCategory != null ? _services.GetSizes(adultCategory.idSizeCategory).GetAwaiter().GetResult() : new List<SizeModel>();
                 var kidsSizes = kidsCategory != null ? _services.GetSizes(kidsCategory.idSizeCategory).GetAwaiter().GetResult() : new List<SizeModel>();
 
+                
                 ViewBag.AdultSizes = adultSizes;
                 ViewBag.KidsSizes = kidsSizes;
 
@@ -141,7 +143,7 @@ namespace webWarehouseInventoryManagement.Controllers
 
                 // here check path of return response filename
                 // Full path 
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);                
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", sanitizedFileName);
                 if (!System.IO.File.Exists(filePath))
                 {
                     ViewBag.ErrorMessage = "Template file not found!";
@@ -190,7 +192,7 @@ namespace webWarehouseInventoryManagement.Controllers
         // New Action for downloading file
         public IActionResult DownloadTemplate(string fileName)
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);            
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ListingFiles", fileName);
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound("File not found.");

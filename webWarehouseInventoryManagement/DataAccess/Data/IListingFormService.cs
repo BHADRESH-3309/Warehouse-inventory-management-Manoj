@@ -19,5 +19,6 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
         Task<ListingFormModel> GetTemplateDetails(string idListingProduct);
         Task<ResponseModel> GetColorsByProductType(string productType, string size);
         Task<ResponseModel> GetSizesByProductAndColors(string productType, List<string> colors, string size);
+        Task<List<ColorModel>> GetColorsByProductTypeForEdit(string productType, string size);
     }
 }

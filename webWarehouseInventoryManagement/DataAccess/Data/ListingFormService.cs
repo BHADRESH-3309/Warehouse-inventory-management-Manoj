@@ -1058,6 +1058,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
         private List<(string SizeName, string SizeMap, string SizeCategory)> GetSizesToProcess(ListingFormModel listingFormModel)
         {
             var sizesToProcess = new List<(string SizeName, string SizeMap, string SizeCategory)>();
+            //idSize, idSizeCategory, SizeName,SizeMap
+            //var sizesToProcess = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
 
             // Process Kids sizes
             if (listingFormModel.KidsSize != null && listingFormModel.KidsSize.Any())
@@ -1065,8 +1067,9 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 if (listingFormModel.KidsSize.FirstOrDefault() == "all")
                 {
                     // Add all kids sizes from the database
-                    var kidsSizes = GetSizesFromDatabase("Kids"); // You'll need to implement this
-                    foreach (var size in kidsSizes)
+                    //var kidsSizes = GetSizesFromDatabase("Kids"); // You'll need to implement this
+                    var kidsSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
+                    foreach (var size in kidsSizes.Where(x=>x.idSizeCategory == 2))
                     {
                         sizesToProcess.Add((size.SizeName, size.SizeMap, "Kids"));
                     }
@@ -1097,8 +1100,9 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 if (listingFormModel.AdultSize.FirstOrDefault() == "all")
                 {
                     // Add all adult sizes from the database
-                    var adultSizes = GetSizesFromDatabase("Adults"); // You'll need to implement this
-                    foreach (var size in adultSizes)
+                    //var adultSizes = GetSizesFromDatabase("Adults"); // You'll need to implement this
+                    var adultSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
+                    foreach (var size in adultSizes.Where(x => x.idSizeCategory == 1))
                     {
                         sizesToProcess.Add((size.SizeName, size.SizeMap, "Adults"));
                     }
@@ -1404,6 +1408,37 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             return response;
         }
 
+        public async Task<List<ColorModel>> GetColorsByProductTypeForEdit(string productType, string size)
+        {
+            List<ColorModel> response = new List<ColorModel>();
+            
+            string query = string.Empty;
+            bool ignoreSizeFilter =
+                    size != null &&
+                    size.Equals("all", StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                query = @"
+            SELECT DISTINCT c.idColor, c.Color, c.ColorMap
+            FROM tblSizes pin
+            INNER JOIN tblColor c ON pin.idColor = c.idColor
+            WHERE pin.product_type = @ProductType
+            AND (@IgnoreSizeFilter = 1 OR pin.idSizeCategory = @Size)
+            ORDER BY c.Color ASC";
+
+                // Assuming you have a ColorModel to map idColor, Color, ColorMap
+                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType, IgnoreSizeFilter = ignoreSizeFilter ? 1 : 0, Size = (size == "Kids") ? 2 : (size == "Adults") ? 1 : (int?)null });
+
+                return data.ToList();
+            }
+            catch (Exception ex)
+            {
+                
+            }
+
+            return response;
+        }
+
 
         #endregion
 
@@ -1530,7 +1565,121 @@ ORDER BY SortOrder;
 
             return response;
         }
+        public async Task<List<SizeModel>> GetSizesByProductAndColorsForEdit(string productType, List<string> colorIds, string size)
+        {
+            List<SizeModel> response = new List<SizeModel>();
 
+            try
+            {
+                // When "all" is passed → ignore color filter
+                bool ignoreColorFilter = false;
+                List<string> colors = null;
+                string colorsCsv = "";
+                string sizeCsv = "";
+
+
+                if (colorIds != null && colorIds.Count > 0 && !colorIds.Select(x => x == "all").FirstOrDefault())
+                {
+
+                    string colorsCsv1 = string.Join(",", colorIds.Select(x => x).ToList());
+                    string queryColors = @"SELECT DISTINCT idColor  FROM tblColor 
+                           WHERE idColor IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ','))";
+
+                    var StringColors = await _sqlDataAccess.GetData<Guid, dynamic>(
+                        queryColors, new { ColorsCsv = colorsCsv1 }
+                    );
+
+                    // Store them as string (since your <select> uses string values)
+                    colors = StringColors.Select(c => c.ToString()).ToList();
+                    if (colors != null && colors.Count > 0)
+                        ignoreColorFilter = true;
+                    if (ignoreColorFilter)
+                    {
+                        colorsCsv = !ignoreColorFilter ? string.Empty : string.Join(",", colors);
+                    }
+
+                }
+                List<string> fixSize;
+
+                if (size != null && size.Equals("all", StringComparison.OrdinalIgnoreCase))
+                {
+                    // "all" means include both
+                    fixSize = new List<string> { "1", "2" };
+                }
+                else if (size != null && size.Equals("Kids", StringComparison.OrdinalIgnoreCase))
+                {
+                    fixSize = new List<string> { "2" };
+                }
+                else if (size != null && size.Equals("Adults", StringComparison.OrdinalIgnoreCase))
+                {
+                    fixSize = new List<string> { "1" };
+                }
+                else
+                {
+                    // Default case if size is null or unknown
+                    fixSize = new List<string>();
+                }
+
+                sizeCsv = string.Join(",", fixSize); // no extra quotes
+
+                if (!string.IsNullOrEmpty(productType) && size == "all" && colorIds == null)
+                {
+                    return response;
+                }
+                if (!string.IsNullOrEmpty(productType) && size == "Kids" && colorIds == null)
+                {
+                   
+                    return response;
+                }
+                if (!string.IsNullOrEmpty(productType) && size == "Adults" && colorIds == null)
+                {
+                    return response;
+                }
+                string query = @"
+WITH DistinctSizes AS (
+    SELECT
+         pin.idSize,
+		pin.SizeMap,
+        pin.SizeName,
+        pin.idSizeCategory,
+        pin.SortOrder,
+        ROW_NUMBER() OVER (
+            PARTITION BY pin.SizeName
+            ORDER BY pin.idSizeCategory
+        ) AS rn
+    FROM tblSizes pin
+    WHERE pin.product_type = @ProductType
+      AND (@ColorsCsv IS NULL OR @ColorsCsv = '' 
+           OR pin.idColor IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ',')))
+      AND (@SizesCsv IS NULL OR @SizesCsv = '' 
+           OR pin.idSizeCategory IN (SELECT value FROM STRING_SPLIT(@SizesCsv, ',')))
+)
+SELECT idSize, SizeMap, SizeName, idSizeCategory
+FROM DistinctSizes
+WHERE rn = 1
+ORDER BY SortOrder;
+";
+
+                var parameters = new
+                {
+                    ProductType = productType,
+                    ColorsCsv = string.IsNullOrEmpty(colorsCsv) ? null : colorsCsv,
+                    SizesCsv = string.IsNullOrEmpty(sizeCsv) ? null : sizeCsv
+                };
+
+                var data = await _sqlDataAccess
+                    .GetData<SizeModel, dynamic>(query, parameters);
+
+
+                return data.ToList();
+
+            }
+            catch (Exception ex)
+            {
+            }
+
+            return response;
+        }
 
 
         #endregion
