@@ -155,7 +155,7 @@ else if (ViewBag.ErrorMessage != null)
                         <select class="form-select js-brand-multiselect" id="colours" asp-for="Colour" multiple="multiple" autocomplete="off">
                             <option value="all">All</option>
                         </select>
-                        <span asp-validation-for="Colour" class="text-danger"></span>
+                        <span asp-validation-for="Colour" class="validation-span-color text-danger"></span>
                     </div>
                 </div>
                 <div class="row mt-4">
@@ -177,7 +177,7 @@ else if (ViewBag.ErrorMessage != null)
                                 @* <option value="all">All</option> *@
                             </select>
                         </div>
-                        <span asp-validation-for="AdultSize" class="text-danger"></span>
+                        <span asp-validation-for="AdultSize" class="validation-span-adult text-danger"></span>
                     </div>
 
                     <!-- Kids Sizes -->
@@ -198,7 +198,7 @@ else if (ViewBag.ErrorMessage != null)
                                 @* <option value="all">All</option> *@
                             </select>
                         </div>
-                        <span asp-validation-for="KidsSize" class="text-danger"></span>
+                        <span asp-validation-for="KidsSize" class="validation-span-kids text-danger"></span>
                     </div>
                 </div>
 
@@ -366,27 +366,27 @@ else if (ViewBag.ErrorMessage != null)
                     <div class="col-lg-2">
                         <label asp-for="Bp1" class="form-label">Bullet Points:</label>
                         <textarea id="bp1" class="form-control" asp-for="Bp1" rows="3" placeholder="Point 1" onkeypress=" return Whitespace(event)"></textarea>
-                        <span asp-validation-for="Bp1" class="text-danger"></span>
+                        <span asp-validation-for="Bp1" class="text-danger validation-bp"></span>
                     </div>
                     <div class="col-lg-2">
                         <label class="form-label invisible" asp-for="Bp2">Bullet Points:</label>
                         <textarea class="form-control" rows="3" asp-for="Bp2" placeholder="Point 2" onkeypress=" return Whitespace(event)"></textarea>
-                        <span asp-validation-for="Bp2" class="text-danger"></span>
+                        <span asp-validation-for="Bp2" class="text-danger validation-bp"></span>
                     </div>
                     <div class="col-lg-2">
                         <label class="form-label invisible" asp-for="Bp3">Bullet Points:</label>
                         <textarea class="form-control" rows="3" asp-for="Bp3" placeholder="Point 3" onkeypress=" return Whitespace(event)"></textarea>
-                        <span asp-validation-for="Bp3" class="text-danger"></span>
+                        <span asp-validation-for="Bp3" class="text-danger validation-bp"></span>
                     </div>
                     <div class="col-lg-2">
                         <label class="form-label invisible" asp-for="Bp4">Bullet Points:</label>
                         <textarea class="form-control" asp-for="Bp4" rows="3" placeholder="Point 4" onkeypress=" return Whitespace(event)"></textarea>
-                        <span asp-validation-for="Bp4" class="text-danger"></span>
+                        <span asp-validation-for="Bp4" class="text-danger validation-bp"></span>
                     </div>
                     <div class="col-lg-2">
                         <label class="form-label invisible" asp-for="Bp5">Bullet Points:</label>
                         <textarea class="form-control" rows="3" placeholder="Point 5" asp-for="Bp5" onkeypress=" return Whitespace(event)"></textarea>
-                        <span asp-validation-for="Bp5" class="text-danger"></span>
+                        <span asp-validation-for="Bp5" class="text-danger validation-bp"></span>
                     </div>
                 </div>
 
@@ -855,14 +855,71 @@ else if (ViewBag.ErrorMessage != null)
 
 
         $('form').on('submit', function (e) {
+
+            $('.validation-span-adult').text('');
+             $('.validation-span-adult').hide();
+
+             $('.validation-span-kids').text('');
+             $('.validation-span-kids').hide();
+
+             $('.validation-span-color').text('');
+             $('.validation-span-color').hide();
+
             $('#loaderNew').show();
             let hasErrors = false;
-            $('.validation-span').text(''); // clear previous errors
+            
+
+            const $country = $('[name="CountryOfOrigin"]');
+            if (!$country.val() || $country.val() === 'Select') {
+                hasErrors = true;
+            }
+            const $PriceChange = $('[name="PriceChange"]');
+            if (!$PriceChange.val() || $PriceChange.val() === 'Select') {
+                hasErrors = true;
+            }
+            const $StyleNameOption = $('[name="StyleNameOption"]');
+            if (!$StyleNameOption.val() || $StyleNameOption.val() === 'Select') {
+                hasErrors = true;
+            }
+
+            const selectedColour = $('[name="Colour"]').val();
+                if (!selectedColour || selectedColour.length === 0) {
+                    $('.validation-span-color').text('Please select the color.');
+                    $('.validation-span-color   ').show();
+                    hasErrors = true;
+                }
 
 
-            // Clear previous errors
-            $('.field-validation-error').text('').removeClass('field-validation-error');
+             $('.text-danger.validation-bp').remove();
 
+        // Loop through each textarea with data-val="true"
+        $('textarea[data-val="true"]').each(function() {
+            const $field = $(this);
+            const value = $field.val().trim();
+            const errorMsg = $field.attr('data-val-required');
+
+            // Remove any previous validation class
+            $field.removeClass('input-validation-error');
+
+            if (!value) {
+                hasErrors = true;
+
+                // Add error class to field
+                $field.addClass('input-validation-error');
+
+                // Insert or show error message right after the textarea
+                if ($field.next('.validation-bp').length === 0) {
+                    $field.after(`<span class="text-danger validation-bp">${errorMsg}</span>`);
+                } else {
+                    $field.next('.validation-bp').text(errorMsg);
+                }
+            } else {
+                // Remove error message if value exists
+                $field.next('.validation-bp').remove();
+            }
+        });
+
+               
             // Validate style name fields
             $('.style-name-field').each(function () {
                 const $field = $(this);
@@ -896,6 +953,14 @@ else if (ViewBag.ErrorMessage != null)
 
             if($('#sizeType').val() !== "all"){
                 if($('#sizeType').val() == "Adults"){
+
+                    const selectedAdultSizes = $('[name="AdultSize"]').val();
+            if (!selectedAdultSizes || selectedAdultSizes.length === 0) {
+                    $('.validation-span-adult').text('Please select the adult size.');
+                    $('.validation-span-adult').show();
+                    hasErrors = true;
+                }
+
                     $('.other-image-adultsValue').each(function () {
                         const $field = $(this);
                         if (!$field.val().trim()) {
@@ -912,6 +977,15 @@ else if (ViewBag.ErrorMessage != null)
                 }
 
                 if($('#sizeType').val() == "Kids"){
+
+                    const selectedKidsSize = $('[name="KidsSize"]').val();
+                if (!selectedKidsSize || selectedKidsSize.length === 0) {
+                    $('.validation-span-kids').text('Please select the kids size.');
+                    $('.validation-span-kids').show();
+                    hasErrors = true;
+                }
+
+
                     $('.other-image-kidsValue').each(function () {
                         const $field = $(this);
                         if (!$field.val().trim()) {
@@ -928,6 +1002,25 @@ else if (ViewBag.ErrorMessage != null)
                 }
 
             }else{
+
+
+
+            const selectedAdultSizes = $('[name="AdultSize"]').val();
+            if (!selectedAdultSizes || selectedAdultSizes.length === 0) {
+                    $('.validation-span-adult').text('Please select the adult size.');
+                    $('.validation-span-adult').show();
+                    hasErrors = true;
+                }
+
+
+                const selectedKidsSize = $('[name="KidsSize"]').val();
+                if (!selectedKidsSize || selectedKidsSize.length === 0) {
+                    $('.validation-span-kids').text('Please select the kids size.');
+                    $('.validation-span-kids').show();
+                    hasErrors = true;
+                }
+                
+
                 $('.other-image-field').each(function () {
                     const $field = $(this);
                     if (!$field.val().trim()) {
@@ -942,6 +1035,8 @@ else if (ViewBag.ErrorMessage != null)
                     }
                 });
             }
+
+            
             if (hasErrors) {
                   $('#loaderNew').hide();
                 e.preventDefault();
@@ -1253,7 +1348,10 @@ else if (ViewBag.ErrorMessage != null)
 
         $(document).ready(function() {
 
-           
+           var valueC = $("#StringColour").val();
+                       if ((valueC && valueC.trim() != "") || $("#idListingProduct").val() === '00000000-0000-0000-0000-000000000000') {
+                           fillColor();
+                       }
             setTimeout(function(){
                if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000'){
                     fillColor();
