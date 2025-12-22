@@ -399,7 +399,9 @@ else if (ViewBag.ErrorMessage != null)
 </div>
 
 @section Scripts {
+    
     <script>
+        var IsLodaed = false;
         $(function () {
 
             let selected = $('#numberOfStyles').data('selected'); // get value from razor
@@ -1360,8 +1362,11 @@ else if (ViewBag.ErrorMessage != null)
                     var valueC1 = $("#StringColour").val()
                     if((valueC1.trim() == ""))
                     {
+                        if(!IsLodaed){
+                            IsLodaed = true;
                         $('#colours').val('all');
                         $('#colours').trigger('change');
+                        }
                     }
                }
 
