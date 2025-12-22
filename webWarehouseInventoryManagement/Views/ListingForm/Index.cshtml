@@ -1351,11 +1351,18 @@ else if (ViewBag.ErrorMessage != null)
            var valueC = $("#StringColour").val();
                        if ((valueC && valueC.trim() != "") || $("#idListingProduct").val() === '00000000-0000-0000-0000-000000000000') {
                            fillColor();
+                           
                        }
             setTimeout(function(){
                if($("#idListingProduct").val() !== '00000000-0000-0000-0000-000000000000'){
                     fillColor();
-               
+                    
+                    var valueC1 = $("#StringColour").val()
+                    if((valueC1.trim() == ""))
+                    {
+                        $('#colours').val('all');
+                        $('#colours').trigger('change');
+                    }
                }
 
             if($("#listingProduct").val())
