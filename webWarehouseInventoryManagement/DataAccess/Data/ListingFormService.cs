@@ -11,7 +11,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
     public class ListingFormService : IListingFormService
     {
         public readonly ISqlDataAccess _sqlDataAccess;
-        public  IConfiguration _config;
+        public IConfiguration _config;
         private readonly AmazonSheetDefaults _amazonSheetDefaults;
 
         public ListingFormService(ISqlDataAccess sqlDataAccess, IConfiguration config, IOptions<AmazonSheetDefaults> amazonDefaults)
@@ -69,7 +69,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
             string query = @"SELECT idSizeCategory, SizeCategory FROM tblSizeCategory ORDER BY SizeCategory ASC";
 
-            sizeCategoryList =  await _sqlDataAccess.GetData<SizeCategoryModel, dynamic>(query, new { });
+            sizeCategoryList = await _sqlDataAccess.GetData<SizeCategoryModel, dynamic>(query, new { });
             return sizeCategoryList;
         }
 
@@ -82,7 +82,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             string query = @"SELECT idSize, idSizeCategory, SizeName,SizeMap FROM tblSizes 
                              WHERE idSizeCategory = @idSizeCategory ORDER BY idSize ASC";
 
-            sizeList =  await _sqlDataAccess.GetData<SizeModel, dynamic>(query, new { idSizeCategory = idSizeCategory });
+            sizeList = await _sqlDataAccess.GetData<SizeModel, dynamic>(query, new { idSizeCategory = idSizeCategory });
             return sizeList;
         }
         #region Generate template section
@@ -94,13 +94,13 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             {
                 if (listingFormModel.idListingProduct != Guid.Empty)
                 {
-                    await _sqlDataAccess.ExecuteDML($@"DELETE FROM tblListingProduct WHERE idListingProduct = '{listingFormModel.idListingProduct}'", new {});
+                    await _sqlDataAccess.ExecuteDML($@"DELETE FROM tblListingProduct WHERE idListingProduct = '{listingFormModel.idListingProduct}'", new { });
                 }
 
                 // if Change Fixed Price: No then implementation of add direct prices of 
                 if (!string.IsNullOrEmpty(listingFormModel.PriceChange) && listingFormModel.PriceChange == "No")
                 {
-                    decimal DefaultPrices_Adults =  Convert.ToDecimal(_config["DefaultPrices:AdultPrice"]);
+                    decimal DefaultPrices_Adults = Convert.ToDecimal(_config["DefaultPrices:AdultPrice"]);
                     decimal DefaultPrices_KidsPrice = Convert.ToDecimal(_config["DefaultPrices:KidsPrice"]);
                     if (listingFormModel.Size == "Kids")
                     {
@@ -128,7 +128,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                 // Example: Model.Colors = List<ColorModel> with idColor & Color
                 string coloursJson = string.Empty;
-                if(listingFormModel.Colour.FirstOrDefault() == "all")
+                if (listingFormModel.Colour.FirstOrDefault() == "all")
                 {
                     coloursJson = "All";
                 }
@@ -141,7 +141,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     // Serialize names to JSON string
                     coloursJson = JsonConvert.SerializeObject(selectedColorNames);
                 }
-                
+
 
                 var country = listingFormModel.Countrys
                            .FirstOrDefault(c => c.idCountryOfOrigin.ToString() == listingFormModel.CountryOfOrigin)
@@ -246,8 +246,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         if (listingFormModel.StyleImages != null && listingFormModel.StyleImages.Count >= styleCounter)
                         {
                             var image = listingFormModel.StyleImages[styleCounter - 1]; // match by index
-                            
-                            if(image.ColorImages.Count > 0)
+
+                            if (image.ColorImages.Count > 0)
                             {
                                 foreach (var colorImage in image.ColorImages) // Each color under that style
                                 {
@@ -266,7 +266,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                                         Color = colorImage.ColorName,
                                         MainImageUrl = colorImage.MainImage,
                                         OtherImageUrlAdult = image.OtherImage,
-                                        OtherImageUrlKids = (listingFormModel.Size.ToLower() == "adults")? null:image.OtherImageUrlKids,
+                                        OtherImageUrlKids = (listingFormModel.Size.ToLower() == "adults") ? null : image.OtherImageUrlKids,
                                     });
                                 }
                             }
@@ -297,14 +297,14 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                 if (listingFormModel.KidsSize != null)
                 {
-                    if(listingFormModel.KidsSize.FirstOrDefault() == "all")
+                    if (listingFormModel.KidsSize.FirstOrDefault() == "all")
                     {
 
                         // Load Adults and Kids sizes separately
                         var kidsCategory = sizeCategories.FirstOrDefault(x => x.SizeCategory == "Kids");
 
                         var kidsSizes = kidsCategory != null ? await GetSizes(kidsCategory.idSizeCategory) : new List<SizeModel>();
-                        
+
                         foreach (var kidsSize in kidsSizes)
                         {
 
@@ -388,7 +388,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         foreach (var color in listingFormModel.Colors)
                         {
                             var idColor = color.idColor;
-                            var colorName  = color.Color;
+                            var colorName = color.Color;
 
                             string colorquery = $@"INSERT INTO tblListingColor(idListingProduct,idColor,Color)
                                                VALUES ('{listingFormModel.idListingProduct}','{idColor}','{colorName}')";
@@ -436,7 +436,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 string productType = listingFormModel.ListingProduct;
 
                 string saveFileFolderPath = _config["Files:FileFolderPath"];
-                string saveFileFolderId ="";
+                string saveFileFolderId = "";
                 //string exportUrl = $"https://docs.google.com/spreadsheets/d/";
                 string tshirtPoloFileId = _config["Files:TShirtPoloFileId"];
                 string hoodieFileId = _config["Files:HoodieFileId"];
@@ -545,7 +545,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                            ?.Country;
                 listingFormModel.CountryName = country;
 
-                string parentSKU =  MakeParentSKU(listingFormModel.CategoryName, listingFormModel.ListingProduct);
+                string parentSKU = MakeParentSKU(listingFormModel.CategoryName, listingFormModel.ListingProduct);
 
 
                 string parentSKUQuery = $@"INSERT INTO tblListingSKU (idListingProduct, SkuType, ParentSKU, Title,CountryOfOrigin)  
@@ -597,7 +597,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         SalePrice = childSKU.SalePrice,
                         MainImageUrl = childSKU.MainImageUrl,
                         OtherImageUrlAdult = childSKU.OtherImageUrlAdult,
-						OtherImageUrlKids = childSKU.OtherImageUrlKids,
+                        OtherImageUrlKids = childSKU.OtherImageUrlKids,
                         CountryOfOrigin = country
                     });
                 }
@@ -612,7 +612,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 return response;
             }
         }
-        public string MakeParentSKU(string categoryName , string listingProduct)
+        public string MakeParentSKU(string categoryName, string listingProduct)
         {
             string parentSKU = string.Empty;
             string listingProductType = GetProductAbbreviation(listingProduct);
@@ -695,13 +695,13 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         }
 
                         // Process sizes
-                        var sizesToProcess = GetSizesToProcess(listingFormModel);
+                        var sizesToProcess = GetSizesToProcess(listingFormModel, colorInfo.ColorId);
 
                         foreach (var sizeInfo in sizesToProcess)
                         {
                             var childSKU = new ChildSKUInfo
                             {
-                               // StyleName = styleName,
+                                // StyleName = styleName,
                                 StyleName = styleNameForSheet,  // ✅ For sheet (with spaces),
                                 StyleNo = styleNo,
                                 Color = colorInfo.ColorName,
@@ -807,7 +807,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                 currentRow++;
 
-                var orderedChildSKUs = childSKUs.OrderBy(c => c.SizeCategory == "Kids" ? 1 : 0).ThenBy(c => c.StyleNo)                          
+                var orderedChildSKUs = childSKUs.OrderBy(c => c.SizeCategory == "Kids" ? 1 : 0).ThenBy(c => c.StyleNo)
                                        .ThenBy(c => c.Color).ToList();
 
                 // Insert each child SKU row
@@ -849,23 +849,23 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                         sheet.Cells[currentRow, columnMap["standard_price"]].Value = _amazonSheetDefaults.TShirtStandardPrice;
                         sheet.Cells[currentRow, columnMap["list_price_with_tax"]].Value = _amazonSheetDefaults.TShirtStandardPrice;
                     }
-                    else if(listingFormModel.ListingProduct == "Sweatshirt")
+                    else if (listingFormModel.ListingProduct == "Sweatshirt")
                     {
                         sheet.Cells[currentRow, columnMap["standard_price"]].Value = _amazonSheetDefaults.SweatshirtStandardPrice;
                         sheet.Cells[currentRow, columnMap["list_price_with_tax"]].Value = _amazonSheetDefaults.SweatshirtStandardPrice;
                     }
-                    else if(listingFormModel.ListingProduct == "Hoodie")
+                    else if (listingFormModel.ListingProduct == "Hoodie")
                     {
                         sheet.Cells[currentRow, columnMap["standard_price"]].Value = _amazonSheetDefaults.HoodieStandardPrice;
                         sheet.Cells[currentRow, columnMap["list_price_with_tax"]].Value = _amazonSheetDefaults.HoodieStandardPrice;
                     }
-                   
+
                     sheet.Cells[currentRow, columnMap["quantity"]].Value = _amazonSheetDefaults.Quantity;
 
                     sheet.Cells[currentRow, columnMap["main_image_url"]].Value = child.MainImageUrl;
 
-                    if(child.SizeCategory == "Kids")
-                        sheet.Cells[currentRow, columnMap["age_range_description"]].Value = "Kid";                        
+                    if (child.SizeCategory == "Kids")
+                        sheet.Cells[currentRow, columnMap["age_range_description"]].Value = "Kid";
                     else
                         sheet.Cells[currentRow, columnMap["age_range_description"]].Value = "Adult";
 
@@ -885,7 +885,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
                     sheet.Cells[currentRow, columnMap["product_description"]].Value = listingFormModel.Description;
                     sheet.Cells[currentRow, columnMap["model"]].Value = child.SKU;
-                    
+
                     sheet.Cells[currentRow, columnMap["closure_type"]].Value = _amazonSheetDefaults.ClosureType;
 
                     sheet.Cells[currentRow, columnMap["model_name"]].Value = child.SKU;
@@ -900,16 +900,17 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     sheet.Cells[currentRow, columnMap["bullet_point5"]].Value = listingFormModel.Bp5;
 
                     //
-                    if(listingFormModel.ListingProduct == "TShirt" || listingFormModel.ListingProduct == "Polo")
-                     sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "T-Shirt";
+                    if (listingFormModel.ListingProduct == "TShirt" || listingFormModel.ListingProduct == "Polo")
+                        sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "T-Shirt";
 
-                    else if(listingFormModel.ListingProduct == "Sweatshirt")
-                      sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "Sweatshirt";
+                    else if (listingFormModel.ListingProduct == "Sweatshirt")
+                        sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "Sweatshirt";
 
                     else if (listingFormModel.ListingProduct == "Hoodie")
                         sheet.Cells[currentRow, columnMap["item_type_name"]].Value = "Hoodie";
 
-                    if (listingFormModel.Size == "All") {
+                    if (listingFormModel.Size == "All")
+                    {
                         sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
                     }
 
@@ -919,13 +920,14 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                             sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlKids;
                         else
                             sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
-                    }   
-                    else {
-						if (child.SizeCategory == "Kids")
-							sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlKids;
-						else
-							sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
-					}
+                    }
+                    else
+                    {
+                        if (child.SizeCategory == "Kids")
+                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlKids;
+                        else
+                            sheet.Cells[currentRow, columnMap["other_image_url1"]].Value = child.OtherImageUrlAdult;
+                    }
 
                     sheet.Cells[currentRow, columnMap["parent_child"]].Value = "Child";
 
@@ -964,16 +966,18 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                     decimal DefaultPrices_KidsPrice = Convert.ToDecimal(_config["DefaultPrices:KidsPrice"]);
                     decimal? DefaultPrices = null; ;
                     //fixed value used 
-                    if (child.SizeCategory == "Kids") {
+                    if (child.SizeCategory == "Kids")
+                    {
                         DefaultPrices = DefaultPrices_KidsPrice;
-                    } else
+                    }
+                    else
                     {
                         DefaultPrices = DefaultPrices_Adults;
                     }
-                        sheet.Cells[currentRow, columnMap["uvp_list_price"]].Value = DefaultPrices;
-                        sheet.Cells[currentRow, columnMap["standard_price"]].Value = DefaultPrices;
-                        sheet.Cells[currentRow, columnMap["list_price_with_tax"]].Value = DefaultPrices;
-                    
+                    sheet.Cells[currentRow, columnMap["uvp_list_price"]].Value = DefaultPrices;
+                    sheet.Cells[currentRow, columnMap["standard_price"]].Value = DefaultPrices;
+                    sheet.Cells[currentRow, columnMap["list_price_with_tax"]].Value = DefaultPrices;
+
 
                     sheet.Cells[currentRow, columnMap["product_tax_code"]].Value = child.ProductTextCode;
 
@@ -1055,7 +1059,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
 
             return colorsToProcess;
         }
-        private List<(string SizeName, string SizeMap, string SizeCategory)> GetSizesToProcess(ListingFormModel listingFormModel)
+        private List<(string SizeName, string SizeMap, string SizeCategory)> GetSizesToProcess(ListingFormModel listingFormModel, Guid ColorId)
         {
             var sizesToProcess = new List<(string SizeName, string SizeMap, string SizeCategory)>();
             //idSize, idSizeCategory, SizeName,SizeMap
@@ -1068,28 +1072,44 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 {
                     // Add all kids sizes from the database
                     //var kidsSizes = GetSizesFromDatabase("Kids"); // You'll need to implement this
-                    var kidsSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
-                    foreach (var size in kidsSizes.Where(x=>x.idSizeCategory == 2))
+                    var kidsSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, new List<string>() { ColorId.ToString() }, "Kids").GetAwaiter().GetResult();
+                    if (kidsSizes != null && kidsSizes.Count > 0)
                     {
-                        sizesToProcess.Add((size.SizeName, size.SizeMap, "Kids"));
+                        //var kidsSizesNew = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
+                        //var ExistSize = kidsSizesNew.FirstOrDefault(x => x.SizeName == kidsSize);
+                        if (kidsSizes != null && kidsSizes.Count > 0)
+                        {
+                            foreach (var size in kidsSizes)
+                            {
+                                sizesToProcess.Add((size.SizeName, size.SizeMap, "Kids"));
+                            }
+                        }
                     }
                 }
                 else
                 {
                     foreach (var kidsSize in listingFormModel.KidsSize)
                     {
-                        SizeModel sizeInfo = null;
-                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == kidsSize.ToLower().Trim()) != null)
+                        var kidsSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, new List<string>() { ColorId.ToString() }, "Kids").GetAwaiter().GetResult();
+                        if (kidsSizes != null && kidsSizes.Count > 0)
                         {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == kidsSize.ToLower().Trim());
+                            var ExistSize = kidsSizes.FirstOrDefault(x => x.SizeName == kidsSize);
+                            if (ExistSize != null)
+                            {
+                                SizeModel sizeInfo = null;
+                                if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == kidsSize.ToLower().Trim()) != null)
+                                {
+                                    sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == kidsSize.ToLower().Trim());
+                                }
+                                else
+                                {
+                                    sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName.ToLower().Trim() == kidsSize.ToLower().Trim());
+                                }
+                                //var sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
+                                string sizeMap = sizeInfo.SizeMap;
+                                sizesToProcess.Add((kidsSize, sizeMap, "Kids"));
+                            }
                         }
-                        else
-                        {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName.ToLower().Trim() == kidsSize.ToLower().Trim());
-                        }
-                        //var sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == kidsSize);
-                        string sizeMap = sizeInfo.SizeMap;
-                        sizesToProcess.Add((kidsSize, sizeMap, "Kids"));
                     }
                 }
             }
@@ -1101,27 +1121,39 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 {
                     // Add all adult sizes from the database
                     //var adultSizes = GetSizesFromDatabase("Adults"); // You'll need to implement this
-                    var adultSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
-                    foreach (var size in adultSizes.Where(x => x.idSizeCategory == 1))
+                    //var adultSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, listingFormModel.Colour, listingFormModel.Size).GetAwaiter().GetResult();
+                    var adultSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, new List<string>() { ColorId.ToString() }, "Adults").GetAwaiter().GetResult();
+                    if (adultSizes != null && adultSizes.Count > 0)
                     {
-                        sizesToProcess.Add((size.SizeName, size.SizeMap, "Adults"));
+                        foreach (var size in adultSizes)
+                        {
+                            sizesToProcess.Add((size.SizeName, size.SizeMap, "Adults"));
+                        }
                     }
                 }
                 else
                 {
                     foreach (var adultSize in listingFormModel.AdultSize)
                     {
-                        SizeModel sizeInfo = null;
-                        if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == adultSize.ToLower().Trim()) != null)
+                        var adultSizes = GetSizesByProductAndColorsForEdit(listingFormModel.ListingProduct, new List<string>() { ColorId.ToString() }, "Adults").GetAwaiter().GetResult();
+                        if (adultSizes != null && adultSizes.Count > 0)
                         {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == adultSize);
+                            var ExistSize = adultSizes.FirstOrDefault(x => x.SizeName == adultSize);
+                            if (ExistSize != null)
+                            {
+                                SizeModel sizeInfo = null;
+                                if (listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap.ToLower().Trim() == adultSize.ToLower().Trim()) != null)
+                                {
+                                    sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeMap == adultSize);
+                                }
+                                else
+                                {
+                                    sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize);
+                                }
+                                string sizeMap = sizeInfo.SizeMap;
+                                sizesToProcess.Add((adultSize, sizeMap, "Adults"));
+                            }
                         }
-                        else
-                        {
-                            sizeInfo = listingFormModel.Sizes.FirstOrDefault(s => s.SizeName == adultSize);
-                        }
-                        string sizeMap = sizeInfo.SizeMap;
-                        sizesToProcess.Add((adultSize, sizeMap, "Adults"));
                     }
                 }
             }
@@ -1135,7 +1167,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             string query = string.Empty;
 
             // Implementation to get kids sizes from database
-            if(sizeName == "Kids")
+            if (sizeName == "Kids")
             {
                 query = "Select * from tblSizes Where idSizeCategory = '2'";
             }
@@ -1143,8 +1175,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             {
                 query = "Select * from tblSizes Where idSizeCategory = '1'";
             }
-            
-            sizeList =  _sqlDataAccess.GetData<SizeModel, dynamic>(query, new { }).GetAwaiter().GetResult().ToList();
+
+            sizeList = _sqlDataAccess.GetData<SizeModel, dynamic>(query, new { }).GetAwaiter().GetResult().ToList();
             return sizeList;
         }
         // Helper methods to get IDs from database
@@ -1153,8 +1185,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             // Implementation to get style ID based on product ID and style number
             string query = $@"SELECT idListingStyle FROM tblListingStyle WHERE idListingProduct = '{idListingProduct}' AND StyleNo = '{styleNo}'";
             Guid idListingStyle = Guid.Parse(_sqlDataAccess.GetSingleValue(query));
-           
-            return idListingStyle; 
+
+            return idListingStyle;
         }
         private Guid GetColorIdFromDatabase(Guid idListingProduct, Guid colorId)
         {
@@ -1268,9 +1300,9 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 // Store them as string (since your <select> uses string values)
                 product.Colour = colorIds.Select(c => c.ToString()).ToList();
                 if (product.Colour != null && product.Colour.Count > 0)
-                    product.StringColour = string.Join(",",colorIds.Select(c => c.ToString()).ToList());
+                    product.StringColour = string.Join(",", colorIds.Select(c => c.ToString()).ToList());
             }
-          
+
             // ---------- Styles ----------
             string queryStyles = @"SELECT StyleName,StyleNo FROM tblListingStyle 
                         WHERE idListingProduct = @idListingProduct 
@@ -1309,8 +1341,8 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 .Where(s => s.SizeCategory.Equals("Adults", StringComparison.OrdinalIgnoreCase))
                 .Select(s => s.SizeName)
                 .ToList();
-            if(product.AdultSize != null && product.AdultSize.Count > 0)
-                product.SelectedAdultSize =  string.Join(",", product.AdultSize);
+            if (product.AdultSize != null && product.AdultSize.Count > 0)
+                product.SelectedAdultSize = string.Join(",", product.AdultSize);
             // Kids
             product.KidsSize = sizes
                 .Where(s => s.SizeCategory.Equals("Kids", StringComparison.OrdinalIgnoreCase))
@@ -1394,7 +1426,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             ORDER BY c.Color ASC";
 
                 // Assuming you have a ColorModel to map idColor, Color, ColorMap
-                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType , IgnoreSizeFilter = ignoreSizeFilter ? 1 : 0, Size = (size == "Kids")?2: (size == "Adults") ? 1 : (int?)null });
+                var data = await _sqlDataAccess.GetData<ColorModel, dynamic>(query, new { ProductType = productType, IgnoreSizeFilter = ignoreSizeFilter ? 1 : 0, Size = (size == "Kids") ? 2 : (size == "Adults") ? 1 : (int?)null });
 
                 response.IsError = false;
                 response.Result = data;
@@ -1411,7 +1443,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
         public async Task<List<ColorModel>> GetColorsByProductTypeForEdit(string productType, string size)
         {
             List<ColorModel> response = new List<ColorModel>();
-            
+
             string query = string.Empty;
             bool ignoreSizeFilter =
                     size != null &&
@@ -1433,7 +1465,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
             }
             catch (Exception ex)
             {
-                
+
             }
 
             return response;
@@ -1443,7 +1475,7 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
         #endregion
 
         #region Return Size
-        public async Task<ResponseModel> GetSizesByProductAndColors(string productType, List<string> colorIds, string  size)
+        public async Task<ResponseModel> GetSizesByProductAndColors(string productType, List<string> colorIds, string size)
         {
             ResponseModel response = new ResponseModel();
 
@@ -1454,12 +1486,12 @@ namespace webWarehouseInventoryManagement.DataAccess.Data
                 List<string> colors = null;
                 string colorsCsv = "";
                 string sizeCsv = "";
-              
+
 
                 if (colorIds != null && colorIds.Count > 0 && !colorIds.Select(x => x == "all").FirstOrDefault())
-                {                   
+                {
 
-                    string colorsCsv1 = string.Join(",", colorIds.Select(x=>x).ToList());
+                    string colorsCsv1 = string.Join(",", colorIds.Select(x => x).ToList());
                     string queryColors = @"SELECT DISTINCT idColor  FROM tblColor 
                            WHERE idColor IN (SELECT value FROM STRING_SPLIT(@ColorsCsv, ','))";
 
@@ -1628,7 +1660,7 @@ ORDER BY SortOrder;
                 }
                 if (!string.IsNullOrEmpty(productType) && size == "Kids" && colorIds == null)
                 {
-                   
+
                     return response;
                 }
                 if (!string.IsNullOrEmpty(productType) && size == "Adults" && colorIds == null)
